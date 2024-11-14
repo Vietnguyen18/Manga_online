@@ -15,6 +15,8 @@ from source.main.model import (
     List_Manga,
     List_Chapter,
     Manga_Update,
+    List_Server,
+    List_Chapter_Novel,
 )
 from source.validate_form import (
     RegisterForm,
@@ -111,6 +113,33 @@ def list_chapter(localhost, id_manga, path_segment_manga, type):
     return ListChapters
 
 
+def list_chapter_novel(localhost, id_manga, path_segment_manga, type):
+
+    querys = List_Chapter_Novel.query.filter_by(id_manga=id_manga).all()
+
+    sorted_querys = sorted(
+        querys,
+        key=lambda x: float(x.id_chapter.split("/")[-1].replace("chapter_", "")),
+        reverse=True,
+    )
+    if querys is None:
+        return jsonify({"message": "Not found chapter"}), 404
+    # print("______VAO_PHAN_DEBUG_CHAPTER______")
+    ListChapterNovels = []
+    chapterNameNumber = 0
+    for query in sorted_querys:
+        itemChapter = {}
+        chapterNameNumber = chapterNameNumber + 1
+        print("id_chapter", query.id_manga)
+        path_segment_chapter = split_link(query.id_chapter)
+        path = f"{localhost}/r{type}/{path_segment_manga}/{path_segment_chapter}"
+        # print(path)
+        itemChapter[f"{chapterNameNumber}"] = path
+        ListChapterNovels.append(path)
+
+    return ListChapterNovels
+
+
 def get_comments(path_segment_manga):
     def get_comment_data(comment):
         like_count = LikesComment.query.filter_by(
@@ -185,6 +214,11 @@ def split_join(url):
     url = url.split("/")
     url = "/".join(url[:3])
     return url
+
+
+def split_link(url):
+    chapter = url.split("/")[-1]
+    return chapter
 
 
 def make_link(localhost, path):
@@ -431,3 +465,7 @@ def separate_page(list_manga, page, type):
     result = {"list_manga": mangas, "page_info": page_info}
 
     return result
+
+
+def get_id_server(index):
+    return List_Server.query.filter_by(index=index).first().name_server

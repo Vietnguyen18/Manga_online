@@ -8,4 +8,4 @@ class LikesComment(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_comment = db.Column(db.Integer, db.ForeignKey("comments.id_comment"))
     id_user = db.Column(db.Integer, db.ForeignKey("profiles.id_user"))
-    status = db.Column(db.Enum("like", "cancel"))
+    status = db.Column(db.Enum("like", "unlike"))

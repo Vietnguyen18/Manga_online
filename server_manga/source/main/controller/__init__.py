@@ -2,6 +2,8 @@ from source import app
 
 from source.main.function.__init__ import *
 from source.main.controller.user import *
+from source.main.controller.home import *
+from source.main.controller.manga import *
 
 app.add_url_rule("/", view_func=reader)
 app.add_url_rule(

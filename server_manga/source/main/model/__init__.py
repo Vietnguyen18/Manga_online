@@ -21,3 +21,4 @@ from source.main.model.TrackingUser import TrackingUser
 from source.main.model.Users import Users
 from source.main.model.Gmail_Form import Gmail_Form
 from source.main.model.RefreshTokens import RefreshTokens
+from source.main.model.Anime_Manga_News import Anime_Manga_News

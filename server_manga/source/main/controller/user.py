@@ -39,6 +39,12 @@ app.add_url_rule(
     methods=["GET"],
     view_func=jwt_required()(get_user),
 )
+# get user new
+app.add_url_rule(
+    "/user_new",
+    methods=["GET"],
+    view_func=(user_new),
+)
 # change profile user
 app.add_url_rule(
     "/change_profile_user/<int:id_user>",
@@ -85,4 +91,11 @@ app.add_url_rule(
     "/user/infor_loaction",
     methods=["GET"],
     view_func=jwt_required()(get_location_information),
+)
+
+# user activity history
+app.add_url_rule(
+    "/user/activity_history/<int:id_user>",
+    methods=["GET", "POST"],
+    view_func=(log_user),
 )

@@ -12,5 +12,5 @@ class Comments(db.Model):
     content = db.Column(db.TEXT)
     time_comment = db.Column(db.TEXT)
     is_comment_reply = db.Column(db.Boolean, default=False)
-    reply_id_comment = db.Column(db.Integer, db.ForeignKey("COMMENTS.id_comment"))
+    reply_id_comment = db.Column(db.Integer, db.ForeignKey("comments.id_comment"))
     is_edited_comment = db.Column(db.Boolean, default=False)

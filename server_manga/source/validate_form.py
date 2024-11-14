@@ -6,6 +6,7 @@ from wtforms import (
     DateField,
     SelectField,
     HiddenField,
+    IntegerField,
 )
 from wtforms.validators import DataRequired, EqualTo, Length, Email, Regexp
 from flask_wtf.file import FileField, FileRequired, FileAllowed
@@ -14,7 +15,7 @@ from flask_wtf.file import FileField, FileRequired, FileAllowed
 class RegisterForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Password", validators=[DataRequired(), Length(min=8)])
-    fullname = StringField("Name")
+    username = StringField("Username")
     submit = SubmitField("Submit")
 
 
@@ -86,3 +87,26 @@ class SearchForm(FlaskForm):
 
 class SwitchForm(FlaskForm):
     state = SubmitField("OFF")
+
+
+class NewMangaForm(FlaskForm):
+    title_manga = StringField("Title", validators=[DataRequired()])
+    path_segment_manga = StringField("Path", validators=[DataRequired()])
+    descript_manga = StringField("Description", validators=[DataRequired()])
+    poster_upload = FileField(
+        "poster_upload",
+        validators=[FileAllowed(["jpg", "png", "bmp", "jpeg"], "poster_upload only!")],
+    )
+    poster_original = FileField(
+        "poster_original",
+        validators=[
+            FileAllowed(["jpg", "png", "bmp", "jpeg"], "poster_original only!")
+        ],
+    )
+    detail_manga = StringField("detail_manga", validators=[DataRequired()])
+    categories = StringField("categories", validators=[DataRequired()])
+    chapters = StringField("chapters", validators=[DataRequired()])
+    status = StringField("status", validators=[DataRequired()])
+    author = StringField("author", validators=[DataRequired()])
+    id_server = StringField("Id_server", validators=[DataRequired()])
+    submit = SubmitField("Submit")

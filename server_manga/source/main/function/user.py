@@ -35,12 +35,12 @@ def create_user():
         # if form.validate_on_submit():
         account = Users.query.filter_by(email=form.email.data).first()
         if account:
-            return jsonify(message="Account already exists!"), 400
+            return jsonify({"message": "Account already exists!"}), 400
         else:
             data = {
                 "email": form.email.data,
                 "password": form.password.data,
-                "fullname": form.fullname.data,
+                "username": form.username.data,
             }
             token = secret.dumps(data, salt=app.config["SECURITY_PASSWORD_SALT"])
             confirm_url = url_for("register_confirm", token=token, _external=True)
@@ -60,14 +60,14 @@ def create_user():
             find_user = Users.query.filter_by(email=form.email.data).first()
             profile = Profiles(
                 id_user=find_user.id_user,
-                name_user=form.fullname.data,
+                name_user=form.username.data,
                 participation_time=convert_time(user.time_register),
                 role=False,
             )
             db.session.add(profile)
             db.session.commit()
             send_mail_to_email(form.email.data, confirm_url, data, form.password.data)
-            return (jsonify({"Status": 200, "message": "Check your email "}),), 200
+            return (jsonify({"Status": 200, "message": "Check your email "})), 200
     except Exception as e:
         print("_____error___", e)
         return {"errMsg": "Something went wrong!", "errCode": str(e)}, 500
@@ -184,25 +184,22 @@ def login():
                         tracking.ip_login = ip_login
                         tracking.location_login = location_ip
                     db.session.commit()
-                    req = (
-                        jsonify(
-                            {
-                                "message": "Login successfully",
-                                "status": 200,
-                                "access_token": access_token,
-                                "refresh_token": refresh_token,
-                                "data": {
-                                    "role": user.role,
-                                    "id_user": user.id_user,
-                                    "name": user.name_user,
-                                    "avatar": user.avatar_user,
-                                    "date_of_birth": user.date_of_birth,
-                                    "email": form.email.data,
-                                    "gender": user.gender,
-                                },
-                            }
-                        ),
-                        200,
+                    req = jsonify(
+                        {
+                            "message": "Login successfully",
+                            "status": 200,
+                            "access_token": access_token,
+                            "refresh_token": refresh_token,
+                            "data": {
+                                "role": user.role,
+                                "id_user": user.id_user,
+                                "name": user.name_user,
+                                "avatar": user.avatar_user,
+                                "date_of_birth": user.date_of_birth,
+                                "email": form.email.data,
+                                "gender": user.gender,
+                            },
+                        }
                     )
 
                     set_access_cookies(req, access_token)
@@ -316,6 +313,40 @@ def forgot_password_confirm(token):
     account.password = hashed_password
     db.session.commit()
     return generate_success_message()
+
+
+# get user new
+def user_new():
+    page = request.args.get("page")
+    try:
+        if page is None:
+            return jsonify({"message": "You forgot to pass the page field"}), 401
+        limit = 20
+        offset = (int(page) - 1) * limit
+        users = (
+            Users.query.order_by(desc(Users.time_register))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+        data_user = []
+        if users:
+            for user in users:
+                profile = Profiles.query.filter(
+                    Profiles.id_user == user.id_user
+                ).first()
+                if profile:
+                    data = {
+                        "id_user": user.id_user,
+                        "name_user": profile.name_user,
+                        "avatar_user": profile.avatar_user,
+                        "participation_time": convert_time(user.time_register),
+                    }
+                    data_user.append(data)
+        return data_user
+    except Exception as e:
+        print(e)
+        return jsonify({"message": "User does not exist"}), 404
 
 
 # get user by id
@@ -448,13 +479,16 @@ def get_log_user():
 
     log_user = LogUser.query.filter_by(id_user=id_user).all()
     for manga in log_user:
+        infor_manga = List_Manga.query.filter_by(
+            path_segment_manga=manga.path_segment_manga
+        ).first()
         localhost = split_join(request.url)
         data = {
             "url_manga": make_link(localhost, f"/manga/{manga.path_segment_manga}/"),
             "title_manga": manga.title_manga,
             "categories": manga.type,
             "poster": manga.poster,
-            "rate": manga.rate,
+            "rate": infor_manga.rate,
             "url_chapter": make_link(
                 localhost,
                 f"/manga/{manga.path_segment_manga}/{manga.path_segment_chapter}",
@@ -553,3 +587,102 @@ def get_location_information():
     except Exception as e:
         print("Error", e)
         return jsonify({"status": 500, "message": f"Error Exception: {str(e)}"}), 500
+
+
+# user activity history
+def log_user(id_user):
+    if request.method == "POST":
+        data = request.form
+        print("_______DATA____" + str(data))
+        path_segment_manga = data["path_segment_manga"]
+        path_segment_chapter = data["path_segment_chapter"]
+        type = data["type"]
+        index = data["index"]
+        if id_user == 0:
+            return jsonify({"message": "login to save history"})
+        user = Users.query.filter(Users.id_user == id_user).first()
+        if user:
+            profile = Profiles.query.filter_by(id_user=id_user).first()
+            if profile:
+                profile.number_reads += 1
+            log_user = LogUser.query.filter_by(
+                path_segment_manga=path_segment_manga,
+                path_segment_chapter=path_segment_chapter,
+            ).first()
+            manga = List_Manga.query.filter(
+                List_Manga.path_segment_manga == path_segment_manga
+            ).first()
+            chapter = List_Chapter.query.filter(
+                List_Chapter.path_segment_chapter == path_segment_chapter,
+                List_Chapter.id_manga == manga.id_manga,
+            ).first()
+            time = datetime.now().strftime("%d/%m/%Y")
+            if manga and chapter:
+                if log_user is None:
+                    data = LogUser(
+                        id_user=id_user,
+                        title_manga=manga.title_manga,
+                        path_segment_manga=path_segment_manga,
+                        title_chapter=chapter.title_chapter,
+                        path_segment_chapter=path_segment_chapter,
+                        poster=manga.poster_original,
+                        type=type,
+                        index=index,
+                        read_time=time,
+                    )
+                    db.session.add(data)
+                else:
+                    log_user.read_time = time
+            else:
+                return jsonify({"message": "chapter not found"})
+            db.session.commit()
+            return jsonify({"message": "History is saved"})
+        else:
+            return jsonify({"message": "user not found"})
+    if request.method == "GET":
+        try:
+            result = []
+            list_manga = []
+            localhost = split_join(request.url)
+            log_user = (
+                LogUser.query.filter(LogUser.id_user == id_user)
+                .order_by(LogUser.id.desc())
+                .all()
+            )
+            for item in log_user:
+                title_manga = item.title_manga
+                if title_manga in list_manga:
+                    continue
+                else:
+                    list_manga.append(title_manga)
+
+                server = List_Server.query.filter(
+                    List_Server.index == item.index
+                ).first()
+                name_server = server.name_server.replace("https:", "").replace("/", "")
+
+                link_manga = make_link(
+                    localhost, f"/r{item.type}/{item.path_segment_manga}"
+                )
+                link_chapter = make_link(
+                    localhost,
+                    f"/r{item.type}/{item.path_segment_manga}/{item.path_segment_chapter}",
+                )
+
+                data = {
+                    "title_manga": title_manga,
+                    "link_manga": link_manga,
+                    "title_chapter": item.title_chapter,
+                    "link_chapter": link_chapter,
+                    "poster": item.poster,
+                    "type": item.type,
+                    "index_server": item.index,
+                    "name_server": name_server,
+                    "readAt": item.read_time.strftime("%d/%m/%Y"),
+                    # 'readAt': item.read_time.strftime("%a, %d %b %Y %H:%M:%S GMT"),
+                }
+                result.append(data)
+            return result
+        except Exception as e:
+            print(e)
+            return jsonify({"message": f"Erorr {e}"})

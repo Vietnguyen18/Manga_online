@@ -13,5 +13,5 @@ class LogUser(db.Model):
     path_segment_chapter = db.Column(db.Text)
     poster = db.Column(db.Text)
     type = db.Column(db.Text)
-    rate = db.Column(db.Integer)
+    index = db.Column(db.Integer)
     read_time = db.Column(db.DateTime, default=db.func.current_timestamp())
