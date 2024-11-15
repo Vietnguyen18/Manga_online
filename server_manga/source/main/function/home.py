@@ -30,7 +30,7 @@ from source.main.function.middleware import *
 
 # get all news
 def get_news():
-    page = request.args.get("page")
+    page = request.args.get("page", default=1)
     number_item = 0
     try:
         news = Anime_Manga_News.query.all()
@@ -109,7 +109,7 @@ def get_new_by_idNews(id_news):
 # new_release_comics
 @cache.cached(timeout=60)
 def new_release_comics(index, type):
-    page = request.args.get("page")
+    page = request.args.get("page", default=1)
     data_new_release_comics = []
     try:
         if page is None:
@@ -168,7 +168,7 @@ def new_release_comics(index, type):
 
 # RECENT COMICS
 def recent_comics(index, type):
-    page = request.args.get("page")
+    page = request.args.get("page", default=1)
     data_recent_comics = []
     try:
         if page is None:
@@ -226,7 +226,7 @@ def recent_comics(index, type):
 
 # RECOMMENDED COMICS
 def recommended_comics(index, type):
-    page = request.args.get("page")
+    page = request.args.get("page", default=1)
     data_recommended_comics = []
     try:
         if page is None:
@@ -283,7 +283,7 @@ def recommended_comics(index, type):
 
 # COOMING SOON COMICS
 def cooming_soon_comics(index, limit, type):
-    page = request.args.get("page")
+    page = request.args.get("page", default=1)
     data_cooming_soon_comics = []
     try:
         if page is None:
@@ -332,7 +332,7 @@ def cooming_soon_comics(index, limit, type):
 
 # RANK WEEK
 def rank_manga_week(index, type):
-    page = request.args.get("page")
+    page = request.args.get("page", default=1)
     data_rank_manga_week = []
     try:
         if page is None:
@@ -384,7 +384,7 @@ def rank_manga_week(index, type):
 
 # RANK MONTH
 def rank_manga_month(index, type):
-    page = request.args.get("page")
+    page = request.args.get("page", default=1)
     data_rank_manga_month = []
     try:
         if page is None:
@@ -436,7 +436,7 @@ def rank_manga_month(index, type):
 
 # RANK YEAR
 def rank_manga_year(index, type):
-    page = request.args.get("page")
+    page = request.args.get("page", default=1)
     data_rank_manga_year = []
     try:
         if page is None:
@@ -492,14 +492,18 @@ def currently_reading(type):
     added_list = []
     current_user = get_jwt_identity()
     id_user = current_user.get("UserID")
-    page = request.args.get("page")
+    page = request.args.get("page", default=1)
     try:
         if page is None:
             return jsonify({"message": "You forgot to pass the page field"}), 401
         limit = 7
         offset = (int(page) - 1) * limit
         log_user = (
-            db.session.query(LogUser)
+            db.session.query(LogUser, Manga_Update)
+            .join(
+                Manga_Update,
+                LogUser.path_segment_manga == Manga_Update.path_segment_manga,
+            )
             .filter(
                 (LogUser.id_user == id_user)
                 & (Manga_Update.id_chapter.like(f"%{type}%"))
@@ -509,8 +513,8 @@ def currently_reading(type):
             .offset(offset)
             .all()
         )
-
-        for manga in log_user:
+        print(log_user)
+        for log, manga in log_user:
             title_manga = manga.title_manga
             if title_manga in added_list:
                 pass
@@ -520,14 +524,11 @@ def currently_reading(type):
                     "url_manga": make_link(
                         localhost, f"/r{type}/{manga.path_segment_manga}/"
                     ),
-                    "title_manga": manga.title_manga,
-                    "categories": manga.categories,
-                    "poster": manga.poster,
+                    "title_manga": log.title_manga,
+                    "categories": log.type,
+                    "poster": log.poster,
                     "rate": manga.rate,
-                    "last_time_read": get_time_diff(
-                        datetime.strptime(manga.read_time, "%H:%M:%S %d-%m-%Y"),
-                        datetime.now(),
-                    ),
+                    "last_time_read": get_time_diff(log.read_time, datetime.now()),
                 }
                 list_manga.append(data)
                 added_list.append(title_manga)

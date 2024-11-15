@@ -63,5 +63,5 @@ app.add_url_rule(
 app.add_url_rule(
     "/currently_reading/<string:type>",
     methods=["GET"],
-    view_func=(currently_reading),
+    view_func=jwt_required()(currently_reading),
 )

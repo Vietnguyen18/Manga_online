@@ -61,7 +61,7 @@ app.add_url_rule(
 
 # get comment by path
 app.add_url_rule(
-    "/manga/comment/<string:path_segment_manga>",
+    "/manga/comments/<string:path_segment_manga>",
     methods=["GET"],
     view_func=get_comment_manga,
 )

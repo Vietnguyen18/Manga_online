@@ -302,7 +302,7 @@ def edit_manga(path_segment_manga):
             manga.categories = form.categories.data
             manga.chapters = form.chapters.data
             manga.status = form.status.data
-            manga.status = form.author.data
+            manga.author = form.author.data
             db.session.commit()
         profile = Profiles.query.filter_by(id_user=id_user).first()
         if profile is None:
@@ -335,6 +335,9 @@ def edit_manga(path_segment_manga):
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
+
+
+# delete manga
 
 
 # get image chapter manga
@@ -844,12 +847,14 @@ def get_all_categories():
 def search_manga():
     try:
         key = request.args.get("search")
+        limit = 10
         if key:
             result = (
                 db.session.query(List_Manga, Manga_Update)
                 .join(Manga_Update)
                 .filter(List_Manga.title_manga.ilike(f"%{key}%"))
                 .order_by(Manga_Update.time_release.desc())
+                .limit(limit)
                 .all()
             )
             manga_list = []
@@ -879,8 +884,13 @@ def search_manga():
 # filter manga by category
 def list_manta_by_category(index):
     key = request.args.get("name_category")
+    page = request.args.get("page", default=1)
     result = []
     try:
+        if page is None:
+            return jsonify({"message": "You forgot to pass the page field"}), 401
+        limit = 49
+        offset = (int(page) - 1) * limit
         if key:
             localhost = split_join(request.url)
             mangas = (
@@ -891,6 +901,8 @@ def list_manta_by_category(index):
                     (List_Server.index == index)
                     & (List_Manga.categories.like(f"%{key}%"))
                 )
+                .limit(limit)
+                .offset(offset)
                 .all()
             )
             if mangas is None:

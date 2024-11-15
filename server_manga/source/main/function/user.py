@@ -113,8 +113,8 @@ def register_confirm(token):
 
 # login account
 def login():
+    form = LoginForm()
     try:
-        form = LoginForm()
         if form.validate_on_submit():
             account = Users.query.filter_by(email=form.email.data).first()
             # print('ID User: ', account.id_user)
@@ -616,7 +616,7 @@ def log_user(id_user):
                 List_Chapter.path_segment_chapter == path_segment_chapter,
                 List_Chapter.id_manga == manga.id_manga,
             ).first()
-            time = datetime.now().strftime("%d/%m/%Y")
+            time = datetime.now().strftime("%Y-%m-%d")
             if manga and chapter:
                 if log_user is None:
                     data = LogUser(
