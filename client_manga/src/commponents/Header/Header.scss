@@ -1,0 +1,75 @@
+.top {
+  width: 100%;
+  min-height: 30px;
+  margin: 0 auto;
+  padding: 10px;
+  .logo {
+    display: flex;
+    gap: 50px;
+    align-items: center;
+    i,
+    .header-notification {
+      padding: 10px;
+      font-size: 24px;
+      border-radius: 15px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .search {
+      width: 420px;
+      position: relative;
+      margin-left: 20px;
+      float: left;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      input {
+        width: 100%;
+        height: 100%;
+        border-radius: 30px;
+        background-color: #3a3b3c;
+        border-color: #3a3b3c;
+        color: #b0b3b8;
+        padding-left: 10px;
+      }
+      .icon_btn_search {
+        position: absolute;
+        top: 0;
+        right: 10px;
+        padding: 10px;
+        font-size: 24px;
+        color: #e5ecf5;
+        cursor: pointer;
+      }
+      .icon_btn_search:hover {
+        color: #aeb1b4;
+      }
+    }
+    .account {
+      display: flex;
+      align-items: center;
+
+      .header-notification {
+        margin: 0 20px;
+        color: #fff;
+      }
+
+      button {
+        width: 150px;
+        border-radius: 10px;
+        background-color: #ff4401;
+        color: #fff;
+      }
+    }
+  }
+}
+
+.nav_bar {
+  width: 100%;
+  min-height: 50px;
+  background-color: #f18121;
+  line-height: 50px;
+  ul {
+    margin: 0;
+  }
+}

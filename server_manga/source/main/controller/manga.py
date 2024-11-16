@@ -23,6 +23,13 @@ app.add_url_rule(
     view_func=jwt_required()(edit_manga),
 )
 
+# delete manga
+app.add_url_rule(
+    "/manga/delete_manga/<string:path_segment_manga>/<string:path_segment_chapter>",
+    methods=["DELETE"],
+    view_func=jwt_required()(delete_manga),
+)
+
 # get list manga by path
 app.add_url_rule(
     "/rmanga/<string:path>",
@@ -100,6 +107,7 @@ app.add_url_rule(
     methods=["PATCH"],
     view_func=jwt_required()(edit_comments),
 )
+
 
 # get comment diary
 app.add_url_rule(

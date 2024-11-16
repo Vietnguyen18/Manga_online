@@ -338,6 +338,40 @@ def edit_manga(path_segment_manga):
 
 
 # delete manga
+def delete_manga(path_segment_manga, path_segment_chapter):
+    current_user = get_jwt_identity()
+    id_user = current_user.get("UserID")
+    path_segment = f"{path_segment_manga}-{path_segment_chapter}"
+    print(current_user)
+    try:
+        if id_user is None:
+            print(id_user)
+            return (
+                jsonify({"error": "Account does not exist"}),
+                400,
+            )
+        comments = Comments.query.filter_by(id_user=id_user).all()
+
+        for comment in comments:
+            LikesComment.query.filter_by(id_comment=comment.id_comment).delete()
+            delete_reply_comment(comment)
+            db.session.delete(comment)
+            CommentDiary.query.filter_by(id_comment=comment.id_comment).delete()
+
+        List_Manga.query.filter(
+            List_Manga.path_segment_manga == path_segment_manga
+        ).delete()
+        Imaga_Chapter.query.filter_by(path_segment=path_segment).delete()
+        LogUser.query.filter_by(path_segment_manga=path_segment_manga).delete()
+        Manga_Update.query.filter_by(path_segment_manga=path_segment_manga).delete()
+        db.session.commit()
+        return jsonify({"message": "Manga deleted successfully"})
+
+    except Exception as e:
+        print("error", str(exit))
+        jsonify(
+            {"status": 500, "message": "need to fill in all email and password fields"}
+        ), 500
 
 
 # get image chapter manga

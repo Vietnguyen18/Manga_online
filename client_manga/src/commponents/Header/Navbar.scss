@@ -1,0 +1,29 @@
+.menu {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  li {
+    color: #ffffff;
+  }
+  a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 16px;
+  }
+  li:hover {
+    background-color: #f29c57;
+    transition: 0.5s;
+    color: #ffffff;
+    font-weight: 500;
+  }
+  .menu_hidden {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    i {
+      padding: 5px;
+      color: aliceblue;
+      cursor: pointer;
+    }
+  }
+}

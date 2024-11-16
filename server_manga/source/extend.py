@@ -469,3 +469,4 @@ def separate_page(list_manga, page, type):
 
 def get_id_server(index):
     return List_Server.query.filter_by(index=index).first().name_server
+

@@ -220,10 +220,10 @@ def login():
 
 
 # logout account
-@login_required
 def logout():
+    current_user = get_jwt_identity()
+    id_user = current_user.get("UserID")
     try:
-        id_user = current_user.id_user
         print("user_id", id_user)
         logout_user()
         # luu thoi gian dang nhap
@@ -344,6 +344,36 @@ def user_new():
                     }
                     data_user.append(data)
         return data_user
+    except Exception as e:
+        print(e)
+        return jsonify({"message": "User does not exist"}), 404
+
+
+# get all user
+def get_all_user():
+    list_all_user = []
+    try:
+        user = (
+            db.session.query(Users, Profiles)
+            .join(Users, Profiles.id_user == Users.id_user)
+            .all()
+        )
+        for account, profile in user:
+            data = {
+                "id_user": account.id_user,
+                "email": account.email,
+                "name_user": profile.name_user,
+                "avatar_user": profile.avatar_user,
+                "participation_time": convert_time(account.time_register),
+                "number_reads": profile.number_reads,
+                "number_comments": profile.number_comments,
+                "date_of_birth": profile.date_of_birth,
+                "gender": profile.gender,
+                "introduction": profile.introduction,
+                "job": profile.job,
+            }
+            list_all_user.append(data)
+        return jsonify({"list_all_user": list_all_user})
     except Exception as e:
         print(e)
         return jsonify({"message": "User does not exist"}), 404

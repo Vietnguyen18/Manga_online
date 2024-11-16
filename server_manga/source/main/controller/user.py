@@ -33,6 +33,14 @@ app.add_url_rule(
     methods=["GET"],
     view_func=(forgot_password_confirm),
 )
+
+# get list all user
+app.add_url_rule(
+    "/user/list_all_user",
+    methods=["GET"],
+    view_func=(get_all_user),
+)
+
 # get user by userid
 app.add_url_rule(
     "/user/<int:id_user>",

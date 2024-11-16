@@ -1,6 +1,6 @@
 from flask import redirect, request, jsonify
 from wtforms import SubmitField
-from datetime import datetime
+from datetime import datetime, timedelta
 from source.validate_form import *
 
 from source.main.model import *
@@ -37,10 +37,19 @@ def get_news():
         if news is None:
             return jsonify({"message": "News not found"}), 404
         localhost = split_join(request.url)
-        limit = 10
+        limit = 5
         total_pape = math.ceil(len(news) / limit)
         offset = (int(page) - 1) * limit
-        list_new = Anime_Manga_News.query.limit(limit).offset(offset).all()
+        current_time = datetime.now()
+        time_threshold = current_time - timedelta(hours=12)
+
+        list_new = (
+            Anime_Manga_News.query.filter(Anime_Manga_News.time_news >= time_threshold)
+            .order_by(Anime_Manga_News.time_news.desc())
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
         results = []
         for new in list_new:
             result = {
@@ -107,7 +116,6 @@ def get_new_by_idNews(id_news):
 
 
 # new_release_comics
-@cache.cached(timeout=60)
 def new_release_comics(index, type):
     page = request.args.get("page", default=1)
     data_new_release_comics = []
@@ -150,6 +158,7 @@ def new_release_comics(index, type):
                 "chapter_new": fix_title_chapter(url_chapter, url_manga),
                 "url_chapter": url_chapter,
                 "time_release": data.Manga_Update.time_release,
+                "views": data.Manga_Update.views,
             }
 
             if r18_server_status() == "off":
@@ -231,7 +240,7 @@ def recommended_comics(index, type):
     try:
         if page is None:
             return jsonify({"message": "You forgot to pass the page field"}), 401
-        limit = 20
+        limit = 50
         offset = (int(page) - 1) * limit
         recommended_comics = (
             db.session.query(Manga_Update, List_Manga)
