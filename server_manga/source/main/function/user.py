@@ -67,7 +67,7 @@ def create_user():
             db.session.add(profile)
             db.session.commit()
             send_mail_to_email(form.email.data, confirm_url, data, form.password.data)
-            return (jsonify({"Status": 200, "message": "Check your email "})), 200
+            return (jsonify({"status": 200, "message": "Check your email "})), 200
     except Exception as e:
         print("_____error___", e)
         return {"errMsg": "Something went wrong!", "errCode": str(e)}, 500
@@ -220,9 +220,9 @@ def login():
 
 
 # logout account
-def logout():
-    current_user = get_jwt_identity()
-    id_user = current_user.get("UserID")
+def logout(id_user):
+    # current_user = get_jwt_identity()
+    # id_user = current_user.get("UserID")
     try:
         print("user_id", id_user)
         logout_user()

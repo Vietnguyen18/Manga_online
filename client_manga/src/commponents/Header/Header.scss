@@ -7,13 +7,13 @@
     display: flex;
     gap: 50px;
     align-items: center;
-    i,
-    .header-notification {
+    justify-content: space-between;
+    i {
       padding: 10px;
       font-size: 24px;
       border-radius: 15px;
       cursor: pointer;
-      color: #fff;
+      color: #333;
     }
     .search {
       width: 420px;

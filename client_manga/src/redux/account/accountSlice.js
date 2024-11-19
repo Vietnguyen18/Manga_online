@@ -36,7 +36,6 @@ export const accountSlice = createSlice({
       state.Users = {
         avatar_user: "",
         FullName: "",
-        Password: "",
         gender: "",
         id_user: null,
         name_user: null,

@@ -1,7 +1,7 @@
 export const list_rank = [
   {
     id: 1,
-    category_name: "Top Ngày",
+    category_name: "Sắp Phát Hành",
   },
   {
     id: 2,
@@ -13,22 +13,6 @@ export const list_rank = [
   },
   {
     id: 4,
-    category_name: "Yêu Thích",
-  },
-  {
-    id: 5,
-    category_name: "Mới Cập Nhật",
-  },
-  {
-    id: 6,
-    category_name: "Truyện Mới",
-  },
-  {
-    id: 7,
-    category_name: "Truyện Full",
-  },
-  {
-    id: 8,
-    category_name: "Truyện Ngẫu Nhiên",
+    category_name: "Top Năm",
   },
 ];

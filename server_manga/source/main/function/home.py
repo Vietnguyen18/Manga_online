@@ -235,12 +235,23 @@ def recent_comics(index, type):
 
 # RECOMMENDED COMICS
 def recommended_comics(index, type):
-    page = request.args.get("page", default=1)
+    page = request.args.get(f"page", default=1)
     data_recommended_comics = []
+    total_page = 0
     try:
         if page is None:
             return jsonify({"message": "You forgot to pass the page field"}), 401
+        manga_count = (
+            db.session.query(Manga_Update, List_Manga)
+            .join(List_Manga, Manga_Update.id_manga == List_Manga.id_manga)
+            .join(List_Server, List_Manga.id_server == List_Server.name_server)
+            .filter(
+                (List_Server.index == index) & (Manga_Update.id_manga.like(f"%{type}%"))
+            )
+            .count()
+        )
         limit = 50
+        total_page = math.ceil(manga_count / limit)
         offset = (int(page) - 1) * limit
         recommended_comics = (
             db.session.query(Manga_Update, List_Manga)
@@ -284,20 +295,37 @@ def recommended_comics(index, type):
 
             data_recommended_comics.append(data)
 
-        return jsonify({"data": data_recommended_comics, "message": "Successful "})
+        return jsonify(
+            {
+                "data": data_recommended_comics,
+                "message": "Successful ",
+                "total_page": total_page,
+            }
+        )
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
 
 
 # COOMING SOON COMICS
-def cooming_soon_comics(index, limit, type):
+def cooming_soon_comics(index, type):
     page = request.args.get("page", default=1)
     data_cooming_soon_comics = []
+    total_page = 0
     try:
         if page is None:
             return jsonify({"message": "You forgot to pass the page field"}), 401
+        query_count = (
+            db.session.query(Manga_Update, List_Manga)
+            .join(List_Manga, Manga_Update.id_manga == List_Manga.id_manga)
+            .join(List_Server, List_Manga.id_server == List_Server.name_server)
+            .filter(
+                (List_Server.index == index) & (Manga_Update.id_manga.like(f"%{type}%"))
+            )
+            .count()
+        )
         limit = 20
+        total_page = math.ceil(query_count / limit)
         offset = (int(page) - 1) * limit
         cooming_soon_comics = (
             db.session.query(Manga_Update, List_Manga)
@@ -333,7 +361,13 @@ def cooming_soon_comics(index, limit, type):
 
             data_cooming_soon_comics.append(data)
 
-        return jsonify({"data": data_cooming_soon_comics, "message": "Successful "})
+        return jsonify(
+            {
+                "data": data_cooming_soon_comics,
+                "message": "Successful ",
+                "total_page": total_page,
+            }
+        )
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
@@ -343,11 +377,24 @@ def cooming_soon_comics(index, limit, type):
 def rank_manga_week(index, type):
     page = request.args.get("page", default=1)
     data_rank_manga_week = []
+    total_page = 0
     try:
         if page is None:
             return jsonify({"message": "You forgot to pass the page field"}), 401
-        limit = 70
+        query_count = (
+            db.session.query(Manga_Update, List_Manga)
+            .join(List_Manga, Manga_Update.id_manga == List_Manga.id_manga)
+            .join(List_Server, List_Manga.id_server == List_Server.name_server)
+            .filter(
+                (List_Server.index == index)
+                & (Manga_Update.id_chapter.like(f"%{type}%"))
+            )
+            .order_by(Manga_Update.views_week.desc())
+            .count()
+        )
+        limit = 50
         offset = (int(page) - 1) * limit
+        total_page = math.ceil(query_count / limit)
         rank_manga_week = (
             db.session.query(Manga_Update, List_Manga)
             .join(List_Manga, Manga_Update.id_manga == List_Manga.id_manga)
@@ -385,7 +432,13 @@ def rank_manga_week(index, type):
 
             data_rank_manga_week.append(data)
 
-        return jsonify({"data": data_rank_manga_week, "message": "Successful "})
+        return jsonify(
+            {
+                "data": data_rank_manga_week,
+                "message": "Successful ",
+                "total_page": total_page,
+            }
+        )
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
@@ -395,10 +448,23 @@ def rank_manga_week(index, type):
 def rank_manga_month(index, type):
     page = request.args.get("page", default=1)
     data_rank_manga_month = []
+    total_page = 0
     try:
         if page is None:
             return jsonify({"message": "You forgot to pass the page field"}), 401
-        limit = 70
+        query_count = (
+            db.session.query(Manga_Update, List_Manga)
+            .join(List_Manga, Manga_Update.id_manga == List_Manga.id_manga)
+            .join(List_Server, List_Manga.id_server == List_Server.name_server)
+            .filter(
+                (List_Server.index == index)
+                & (Manga_Update.id_chapter.like(f"%{type}%"))
+            )
+            .order_by(Manga_Update.views_month.desc())
+            .count()
+        )
+        limit = 50
+        total_page = math.ceil(query_count / limit)
         offset = (int(page) - 1) * limit
         rank_manga_month = (
             db.session.query(Manga_Update, List_Manga)
@@ -437,7 +503,13 @@ def rank_manga_month(index, type):
 
             data_rank_manga_month.append(data)
 
-        return jsonify({"data": data_rank_manga_month, "message": "Successful "})
+        return jsonify(
+            {
+                "data": data_rank_manga_month,
+                "message": "Successful ",
+                "total_page": total_page,
+            }
+        )
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
@@ -447,10 +519,23 @@ def rank_manga_month(index, type):
 def rank_manga_year(index, type):
     page = request.args.get("page", default=1)
     data_rank_manga_year = []
+    total_page = 0
     try:
         if page is None:
             return jsonify({"message": "You forgot to pass the page field"}), 401
+        query_count = (
+            db.session.query(Manga_Update, List_Manga)
+            .join(List_Manga, Manga_Update.id_manga == List_Manga.id_manga)
+            .join(List_Server, List_Manga.id_server == List_Server.name_server)
+            .filter(
+                (List_Server.index == index)
+                & (Manga_Update.id_chapter.like(f"%{type}%"))
+            )
+            .order_by(Manga_Update.views.desc())
+            .count()
+        )
         limit = 70
+        total_page = math.ceil(query_count / limit)
         offset = (int(page) - 1) * limit
         rank_manga_year = (
             db.session.query(Manga_Update, List_Manga)
@@ -489,7 +574,13 @@ def rank_manga_year(index, type):
 
             data_rank_manga_year.append(data)
 
-        return jsonify({"data": data_rank_manga_year, "message": "Successful "})
+        return jsonify(
+            {
+                "data": data_rank_manga_year,
+                "message": "Successful ",
+                "total_page": total_page,
+            }
+        )
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500

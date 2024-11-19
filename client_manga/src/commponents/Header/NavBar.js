@@ -25,8 +25,8 @@ const NavBar = () => {
     <>
       <Container>
         <ul className="menu">
-          <a href="/home">
-            <li>Trang Chu</li>
+          <a href="/">
+            <li>Trang Chủ</li>
           </a>
           <li
             className="menu_hidden"

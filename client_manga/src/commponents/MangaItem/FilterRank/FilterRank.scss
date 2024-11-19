@@ -1,8 +1,7 @@
 .main_content {
   width: 100%;
   margin: 15px;
-  .new_manga,
-  .recommended_comics {
+  .filter_rank {
     .text_List_hot {
       color: #ff2853;
       padding: 10px 0px;
@@ -14,12 +13,14 @@
         -moz-osx-font-smoothing: grayscale;
       }
     }
-    .text_List_recommended {
+    .line_text_rank {
       color: #3f94d5;
-      padding: 10px 0px;
-      .icon_recommende {
+      padding: 10px 0;
+      font-size: 24px;
+      .icon_flag {
         display: inline-block;
-        font-size: inherit;
+        font-size: 24px;
+        padding-right: 5px;
         text-rendering: auto;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
@@ -90,29 +91,18 @@
         .time-ago {
           background-color: #51b8ec;
         }
-        .book_name {
-          position: relative;
-        }
       }
     }
   }
 }
 
-.btnshowAll {
+.pagination {
   padding-top: 10px;
   text-align: center !important;
   margin-bottom: 30px;
-  span {
-    border-radius: 5px;
-    box-shadow: 0 0 3px 0 rgb(0 0 0 / 25%);
-    background-color: #746d67;
-    font-size: 16px;
-    font-weight: 700;
-    color: #fff !important;
-    padding: 12px 20px;
-    display: inline-block;
-    animation: blink 2s infinite;
-  }
+  padding: 12px 20px;
+  display: flex;
+  justify-content: center;
 }
 
 @keyframes blink {

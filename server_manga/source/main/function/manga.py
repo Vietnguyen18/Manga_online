@@ -923,7 +923,16 @@ def list_manta_by_category(index):
     try:
         if page is None:
             return jsonify({"message": "You forgot to pass the page field"}), 401
+        query_count = (db.session.query(Manga_Update, List_Manga)
+                .join(List_Manga, Manga_Update.id_manga == List_Manga.id_manga)
+                .join(List_Server, List_Manga.id_server == List_Server.name_server)
+                .filter(
+                    (List_Server.index == index)
+                    & (List_Manga.categories.like(f"%{key}%"))
+                )
+                .count())
         limit = 49
+        total_page = math.ceil(query_count/ limit)
         offset = (int(page) - 1) * limit
         if key:
             localhost = split_join(request.url)
@@ -966,7 +975,7 @@ def list_manta_by_category(index):
                 }
                 result.append(data)
 
-            return jsonify(result)
+            return jsonify({"data": result, "total_page": total_page})
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500

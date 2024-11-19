@@ -4,9 +4,10 @@ import { CiStar } from "react-icons/ci";
 import "./Home.scss";
 import { ListAllMangaNew, ListRecommendedComics } from "../../services/api";
 import imageError from "../../assets/image_error.png";
-import { IoCloudDownload } from "react-icons/io5";
-
+import { useNavigate } from "react-router-dom";
+import { IoMdCloudDownload } from "react-icons/io";
 const Home = () => {
+  const navigate = useNavigate();
   const [listDataNew, setListDataNew] = useState([]);
   const [listDataRecommend, setListDataRecommend] = useState([]);
   // random page
@@ -14,22 +15,23 @@ const Home = () => {
   setInterval(() => {
     randomPage = Math.floor(Math.random() * 10) + 1;
   }, 3000000);
-  console.log(randomPage);
 
   useEffect(() => {
     const fetchGetListMangaNew = async () => {
       const req = await ListAllMangaNew(randomPage);
       setListDataNew(req.data);
-      console.log(req.data);
     };
     const fetchListRecommended = async () => {
       const req = await ListRecommendedComics(randomPage);
       setListDataRecommend(req.data);
-      console.log(req.data);
     };
     fetchGetListMangaNew();
     fetchListRecommended();
   }, []);
+
+  const goToRecommendedPage = (page) => {
+    navigate(`/truyen-moi-cap-nhat/${page}`); // Điều hướng đến trang Recommended với page là 2
+  };
 
   return (
     <Container>
@@ -73,7 +75,7 @@ const Home = () => {
 
                   return (
                     <>
-                      <li className="grid-item">
+                      <li className="grid-item" key={index}>
                         <div className="book_avatar">
                           <a href={e.url_manga} title={e.url_manga}>
                             <img
@@ -116,7 +118,7 @@ const Home = () => {
           <h2>
             <span className="text_List_recommended">
               <i className="icon_recommende">
-                <CiStar />
+                <IoMdCloudDownload />
               </i>
               Truyện tranh mới phát hành
             </span>
@@ -189,7 +191,14 @@ const Home = () => {
       </div>
       {/* Button */}
       <div className="btnshowAll">
-        <a href="/truyen-moi-cap-nhat/trang-2.html">Xem thêm truyện khác</a>
+        <span
+          onClick={(e) => {
+            e.preventDefault();
+            goToRecommendedPage(2);
+          }}
+        >
+          Xem thêm truyện khác
+        </span>
       </div>
     </Container>
   );

@@ -21,8 +21,7 @@ const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.account.isAuthenticated);
-  const datauser = useSelector((state) => state.account.dataUser);
-  const user = useSelector((state) => state.account.Users);
+  const datauser = useSelector((state) => state.account.dataUser?.data);
   const [isLight, setIsLight] = useState(true);
   const [isShowModalLogin, setIsShowModalLogin] = useState(false);
   const [apiUser, setApiUser] = useState([]);
@@ -33,8 +32,9 @@ const Header = () => {
     const FetchUserData = async () => {
       try {
         if (datauser?.id_user) {
-          const req = await fetchAccount();
-          const fetchedUser = req.find(
+          const useList = await fetchAccount();
+          const user = useList.list_all_user;
+          const fetchedUser = user.find(
             (user) => user?.id_user === datauser?.id_user
           );
           fetchedUser && setApiUser(fetchedUser);
@@ -77,11 +77,7 @@ const Header = () => {
   };
 
   const handleLogOut = async () => {
-    const res = await callLogout({
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    });
+    const res = await callLogout(datauser?.id_user);
     if (res) {
       dispatch(doLogoutAction());
       navigate("/");
@@ -134,7 +130,9 @@ const Header = () => {
               </button>
             </div>
             <div className="header-notification">
-              <IoIosNotifications size={24} />
+              <i>
+                <IoIosNotifications />
+              </i>
             </div>
             <div className="account">
               {!isAuthenticated ? (
