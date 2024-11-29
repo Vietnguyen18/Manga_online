@@ -1,4 +1,6 @@
 import instance from "../utils/axios";
+const token = localStorage.getItem("access_token");
+console.log("token", token);
 
 // api token
 export const callRefeshToken = () => {
@@ -26,18 +28,20 @@ export const callLogin = async (email, password) => {
 };
 
 // api register
-export const callRegister = async (email, username, password) => {
+export const callRegister = async (username, email, password) => {
   const response = await instance.post(`/register`, {
     username: username,
     email: email,
     password: password,
   });
-  return response;
+  return response.data;
 };
 
 // api logout
-export const callLogout = (id_user) => {
-  return instance.post(`/logout/${id_user}`);
+export const callLogout = () => {
+  return instance.post(`/logout`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 };
 
 // api list category
@@ -94,9 +98,31 @@ export const ListRankYear = async (page) => {
 };
 
 // history read
-export const HistoryRead = async (idUser) => {
+export const ListHistoryRead = async (idUser) => {
+  const response = await instance.get(`/user/activity_history/${idUser}`);
+  return response;
+};
+// api user new register
+export const ListUsersNew = async () => {
+  const response = await instance.get("/user/count_user_regitser");
+  return response;
+};
+// api views manga
+export const ViewsManga = async () => {
+  const response = await instance.get("/manga/total_views");
+  return response;
+};
+
+// api filter manga
+export const FilterManga = async (search, page) => {
   const response = await instance.get(
-    `http://127.0.0.1:7979/user/activity_history/${idUser}`
+    `http://127.0.0.1:7979/manga/filter_manga/1?search=${search}&page=${page}`
   );
+  return response.data;
+};
+
+// api card stats
+export const CardStats = async () => {
+  const response = await instance.get("/card_stats");
   return response;
 };

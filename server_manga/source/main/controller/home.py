@@ -65,3 +65,5 @@ app.add_url_rule(
     methods=["GET"],
     view_func=jwt_required()(currently_reading),
 )
+# card stats
+app.add_url_rule("/card_stats", methods=["GET"], view_func=card_stats)

@@ -3,11 +3,14 @@ import "./Navbar.scss";
 import { Container } from "react-bootstrap";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
 import ModalCategory from "./Modal_categody/ModalCategory";
+import { useNavigate } from "react-router-dom";
 
 const NavBar = () => {
   const [isShowModalCate, setIsShowModalCate] = useState(false);
   const hoverTime = useRef(null);
   const [istype, setIsType] = useState(null);
+  const id_user = localStorage.getItem("id_user");
+  const navigate = useNavigate();
   const handelShow = (type) => {
     setIsType(type);
     clearTimeout(hoverTime.current);
@@ -21,6 +24,10 @@ const NavBar = () => {
       setIsShowModalCate(false);
     }, 300);
   };
+  const handleNavigate = () => {
+    navigate(`/lich-su/${id_user}`);
+  };
+
   return (
     <>
       <Container>
@@ -51,7 +58,7 @@ const NavBar = () => {
           <a href="/tim-truyen">
             <li>Tìm Truyện</li>
           </a>
-          <a href="/lich-su">
+          <a to="/lich-su" onClick={() => handleNavigate()}>
             <li>Lịch Sử</li>
           </a>
           <a href="/theo-doi">

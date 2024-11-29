@@ -2,7 +2,6 @@ from source import app
 
 from source.main.function.__init__ import *
 
-
 # register
 app.add_url_rule("/register", methods=["POST"], view_func=create_user)
 
@@ -14,7 +13,7 @@ app.add_url_rule(
 # login account
 app.add_url_rule("/login", methods=["POST"], view_func=login)
 # logout account
-app.add_url_rule("/logout/<int:id_user>", methods=["POST"], view_func=(logout))
+app.add_url_rule("/logout", methods=["POST"], view_func=jwt_required()(logout))
 # change_password
 app.add_url_rule(
     "/change_password/user/<int:id>",
@@ -106,4 +105,8 @@ app.add_url_rule(
     "/user/activity_history/<int:id_user>",
     methods=["GET", "POST"],
     view_func=(log_user),
+)
+# count user regitser
+app.add_url_rule(
+    "/user/count_user_regitser", methods=["GET"], view_func=count_user_register
 )

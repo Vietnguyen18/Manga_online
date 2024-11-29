@@ -2,16 +2,18 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "./ModalAccount.scss";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 const ModalAccount = (props) => {
   const { handleClose, show } = props;
   const navigate = useNavigate();
   const handleClickLogin = () => {
     handleClose();
-    navigate("/login");
+    navigate("/login", { state: { action: "login" } });
   };
+
   const handleClickRegister = () => {
     handleClose();
-    navigate("/register");
+    navigate("/register", { state: { action: "register" } });
   };
   return (
     <Modal

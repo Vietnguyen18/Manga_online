@@ -56,6 +56,9 @@ def after_request(response):
 
 app.config["SECRET_KEY"] = "24580101357999"
 app.config["SECURITY_PASSWORD_SALT"] = "24580201357999"
+app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     "mysql+pymysql://ducviet:Ducviet%4018@localhost/Manga?charset=utf8mb4"
 )

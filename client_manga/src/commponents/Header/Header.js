@@ -17,16 +17,26 @@ import React from "react";
 import ModalAccount from "../Auth/ModalAccount/ModalAccount";
 import NavBar from "./NavBar";
 
-const Header = () => {
+const Header = ({ isLight, setIsLight }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.account.isAuthenticated);
-  const datauser = useSelector((state) => state.account.dataUser?.data);
-  const [isLight, setIsLight] = useState(true);
+  const datauser = useSelector((state) => state.account.dataUser);
   const [isShowModalLogin, setIsShowModalLogin] = useState(false);
   const [apiUser, setApiUser] = useState([]);
-  console.log(apiUser);
 
+  // thay doi gia dien
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("isLight") === "true";
+    setIsLight(savedTheme);
+
+    // cap nhat
+    document.body.style.backgroundColor = savedTheme ? "#fff" : "#18191a";
+    const nav = document.getElementsByClassName("nav_bar");
+    for (let i = 0; i < nav.length; i++) {
+      nav[i].style.backgroundColor = savedTheme ? "#f18121" : "#242526";
+    }
+  }, [setIsLight]);
   // User
   useEffect(() => {
     const FetchUserData = async () => {
@@ -77,8 +87,11 @@ const Header = () => {
   };
 
   const handleLogOut = async () => {
-    const res = await callLogout(datauser?.id_user);
+    const res = await callLogout();
     if (res) {
+      localStorage.removeItem("id_user");
+      localStorage.removeItem("role");
+      localStorage.removeItem("access_token");
       dispatch(doLogoutAction());
       navigate("/");
       // message.success("Đăng xuất thành công!");
@@ -93,16 +106,16 @@ const Header = () => {
       });
     }
   };
-
   const handelLight = () => {
-    setIsLight(!isLight);
-    document.body.style.backgroundColor = isLight ? "#ffff" : "#18191a";
+    const newLight = !isLight;
+    setIsLight(newLight);
+    localStorage.setItem("isLight", newLight);
+    document.body.style.backgroundColor = newLight ? "#fff" : "#18191a";
     const nav = document.getElementsByClassName("nav_bar");
     for (let i = 0; i < nav.length; i++) {
-      nav[i].style.backgroundColor = isLight ? "#f18121" : "#242526";
+      nav[i].style.backgroundColor = newLight ? "#f18121" : "#242526";
     }
   };
-
   return (
     <>
       <Container>
@@ -115,8 +128,8 @@ const Header = () => {
             <i
               onClick={() => handelLight()}
               style={{
-                backgroundColor: isLight ? "#fff" : "#333",
-                color: isLight ? "#333" : "#fff",
+                backgroundColor: isLight ? "#333" : "#fff",
+                color: isLight ? "#fff" : "#333",
               }}
             >
               <HiOutlineLightBulb />
@@ -130,7 +143,11 @@ const Header = () => {
               </button>
             </div>
             <div className="header-notification">
-              <i>
+              <i
+                style={{
+                  color: isLight ? "#333" : "#fff",
+                }}
+              >
                 <IoIosNotifications />
               </i>
             </div>
@@ -150,9 +167,12 @@ const Header = () => {
                       e.preventDefault();
                     }}
                   >
-                    <Space>
-                      <Avatar src={apiUser?.avatarLink || avatar} />
-                      {apiUser?.FullName}
+                    <Space
+                      className="avatar"
+                      style={{ color: isLight ? "#333" : "#fff" }}
+                    >
+                      <Avatar src={apiUser?.avatar_user || avatar} />
+                      {apiUser?.name_user}
                     </Space>
                   </a>
                 </Dropdown>

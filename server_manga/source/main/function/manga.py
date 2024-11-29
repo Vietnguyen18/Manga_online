@@ -164,6 +164,70 @@ def get_all_data(index):
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
 
 
+# filter manga
+def filter_manga(index):
+    try:
+        page = int(request.args.get("page", default=1))
+        search = request.args.get("search", default=None)
+        limit = 5
+        offset = (page - 1) * limit
+
+        id_server = get_id_server(index)
+
+        base_query = List_Manga.query.filter_by(id_server=id_server)
+
+        if search:
+            search_filter = or_(
+                List_Manga.categories.ilike(f"%{search}%"),
+                List_Manga.author.ilike(f"%{search}%"),
+                List_Manga.title_manga.ilike(f"%{search}%"),
+            )
+            base_query = base_query.filter(search_filter)
+
+        total_items = base_query.count()
+        total_page = math.ceil(total_items / limit)
+
+        manga_list = (
+            base_query.order_by(List_Manga.views_original.desc())
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        data = []
+        for item in manga_list:
+            genres = "Novel" if "novel" in item.id_manga else "Manga"
+            list_all_manga = {
+                "genres": genres,
+                "id_manga": item.id_manga,
+                "title": item.title_manga,
+                "poster": item.poster_original,
+                "categories": item.categories,
+                "rate": item.rate,
+                "views": item.views_original,
+                "status": item.status,
+                "author": item.author,
+                "comments": item.comments,
+            }
+            data.append(list_all_manga)
+
+        return (
+            jsonify(
+                {
+                    "status": 200,
+                    "data": data,
+                    "total_page": total_page,
+                    "number_item": total_items,
+                }
+            ),
+            200,
+        )
+
+    except Exception as e:
+        print(f"Error in get_manga_by_admin: {e}")
+        return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
+
+
 # get list manga by path
 def get_listManga(path):
     try:
@@ -923,16 +987,17 @@ def list_manta_by_category(index):
     try:
         if page is None:
             return jsonify({"message": "You forgot to pass the page field"}), 401
-        query_count = (db.session.query(Manga_Update, List_Manga)
-                .join(List_Manga, Manga_Update.id_manga == List_Manga.id_manga)
-                .join(List_Server, List_Manga.id_server == List_Server.name_server)
-                .filter(
-                    (List_Server.index == index)
-                    & (List_Manga.categories.like(f"%{key}%"))
-                )
-                .count())
+        query_count = (
+            db.session.query(Manga_Update, List_Manga)
+            .join(List_Manga, Manga_Update.id_manga == List_Manga.id_manga)
+            .join(List_Server, List_Manga.id_server == List_Server.name_server)
+            .filter(
+                (List_Server.index == index) & (List_Manga.categories.like(f"%{key}%"))
+            )
+            .count()
+        )
         limit = 49
-        total_page = math.ceil(query_count/ limit)
+        total_page = math.ceil(query_count / limit)
         offset = (int(page) - 1) * limit
         if key:
             localhost = split_join(request.url)
@@ -976,6 +1041,27 @@ def list_manta_by_category(index):
                 result.append(data)
 
             return jsonify({"data": result, "total_page": total_page})
+    except Exception as e:
+        print(e)
+        return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
+
+
+# views weed and year
+def views_manga():
+    views = []
+    try:
+        limit = 10
+        manga = (
+            Manga_Update.query.order_by(Manga_Update.time_release.desc())
+            .limit(limit)
+            .all()
+        )
+
+        for item in manga:
+            data = {"views_week": item.views_week, "views_year": item.views}
+            views.append(data)
+        return jsonify(views)
+
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500

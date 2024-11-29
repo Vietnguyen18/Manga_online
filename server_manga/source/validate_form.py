@@ -8,15 +8,53 @@ from wtforms import (
     HiddenField,
     IntegerField,
 )
-from wtforms.validators import DataRequired, EqualTo, Length, Email, Regexp
+from wtforms.validators import (
+    DataRequired,
+    EqualTo,
+    ValidationError,
+    Length,
+    Email,
+    Regexp,
+)
 from flask_wtf.file import FileField, FileRequired, FileAllowed
+import re
+
+# class RegisterForm(FlaskForm):
+#     email = StringField("Email", validators=[DataRequired(), Email()])
+#     password = PasswordField("Password", validators=[DataRequired(), Length(min=8)])
+#     username = StringField("Username")
+#     submit = SubmitField("Submit")
 
 
 class RegisterForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired(), Length(min=8)])
+    email = StringField(
+        "Email",
+        validators=[
+            DataRequired(message="Email is required"),
+            Email(message="Invalid email format"),
+        ],
+    )
+    password = PasswordField(
+        "Password",
+        validators=[
+            DataRequired(message="Password is required"),
+            Length(min=8, message="Password must be at least 8 characters"),
+        ],
+    )
     username = StringField("Username")
     submit = SubmitField("Submit")
+
+    def validate_email(self, field):
+        """Custom email validation for additional constraints."""
+        allowed_domains = ["example.com", "test.com"]
+        email_pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+        if not re.match(email_pattern, field.data):
+            raise ValidationError("Email does not match the required pattern.")
+        domain = field.data.split("@")[-1]
+        if domain not in allowed_domains:
+            raise ValidationError(
+                f"Email domain must be one of the following: {', '.join(allowed_domains)}"
+            )
 
 
 class LoginForm(FlaskForm):

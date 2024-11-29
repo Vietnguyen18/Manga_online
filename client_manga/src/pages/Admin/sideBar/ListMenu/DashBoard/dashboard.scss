@@ -1,0 +1,261 @@
+.container-dashboard {
+  padding: 20px;
+  // infomation
+  .content-dashboard {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 50px;
+    .information {
+      background-color: #dde6ed;
+      width: 250px;
+      border-radius: 10px;
+      padding: 15px;
+      .box-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        justify-content: space-between;
+        i {
+          font-size: 24px;
+          padding: 12px;
+          background-color: #ef4444;
+          color: #fff;
+          border-radius: 100%;
+        }
+      }
+      .parameter {
+        margin: 16px 0 0 0;
+
+        span {
+          padding-right: 10px;
+        }
+      }
+    }
+  }
+
+  // chart
+  .dashboard-charts {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 30px 0;
+    flex-wrap: wrap;
+    .card-line-chart,
+    .card-bar-chart {
+      background-color: #2a3142;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      flex: 1;
+      padding: 20px;
+      color: #fff;
+      min-width: 300px;
+      max-width: 100%;
+      .header {
+        margin-bottom: 20px;
+
+        h6 {
+          font-size: 14px;
+          text-transform: uppercase;
+          color: #a0aec0;
+          margin-bottom: 5px;
+        }
+
+        h2 {
+          font-size: 18px;
+          font-weight: bold;
+          margin: 0;
+        }
+      }
+
+      .chart-container {
+        position: relative;
+        height: 300px;
+      }
+    }
+
+    .card-bar-chart {
+      background-color: #f7f9fc;
+      color: #333;
+
+      .header h6 {
+        color: #6c757d;
+      }
+
+      .header h2 {
+        color: #000;
+      }
+    }
+  }
+
+  // books
+  .content-book {
+    width: 100%;
+    min-height: 200px;
+    .table-container {
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+      .tilte {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        color: #333;
+      }
+      .table-content {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #ffffff;
+        overflow-x: auto;
+        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+        table {
+          width: 100%;
+          thead {
+            background-color: #007bff;
+            color: #ffffff;
+
+            th {
+              padding: 10px;
+              text-align: left;
+              font-weight: bold;
+              text-transform: uppercase;
+            }
+          }
+
+          tbody {
+            tr {
+              &:nth-child(odd) {
+                background-color: #f2f2f2;
+              }
+
+              &:hover {
+                background-color: #e9ecef;
+              }
+            }
+
+            td {
+              padding: 10px;
+              color: #333;
+              text-align: left;
+
+              &:first-child {
+                font-weight: bold;
+              }
+            }
+          }
+        }
+      }
+      .pagination-dashboard {
+        text-align: center !important;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+/* Responsive cho pc */
+@media screen and (min-width: 1024px) {
+  .content-dashboard {
+    gap: 20px;
+  }
+  .dashboard-charts {
+    padding: 15px;
+    .card-line-chart,
+    .card-bar-chart {
+      width: 100%;
+      padding: 15px;
+    }
+  }
+  .card-line-chart,
+  .card-bar-chart {
+    width: 100%;
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 300px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+}
+
+/* Responsive cho Máy Tính Bảng(768px đến 1023px) */
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .content-header {
+    .header-title {
+      display: none;
+    }
+    .header-activity {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+  .content-dashboard {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .dashboard-charts {
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    .card-line-chart,
+    .card-bar-chart {
+      width: 100%;
+      .chart-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+      }
+
+      canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+    }
+  }
+}
+
+/* Responsive cho Mobile */
+@media screen and (max-width: 767px) {
+  .container-dashboard {
+    height: 100%;
+    .content-dashboard {
+      flex-direction: column;
+      gap: 20px;
+      margin: 0;
+      .information {
+        width: 100% !important;
+        background-color: #fff;
+      }
+    }
+  }
+  .content-header {
+    display: none;
+  }
+
+  .dashboard-charts {
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    .card-line-chart,
+    .card-bar-chart {
+      width: 100%;
+      .chart-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+      }
+
+      canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+    }
+  }
+}

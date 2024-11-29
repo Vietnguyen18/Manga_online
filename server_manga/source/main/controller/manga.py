@@ -16,6 +16,13 @@ app.add_url_rule(
     "/manga/get_all_manga/<int:index>", methods=["GET"], view_func=get_all_data
 )
 
+# management manga
+app.add_url_rule(
+    "/manga/filter_manga/<int:index>",
+    methods=["GET"],
+    view_func=filter_manga,
+)
+
 # edit manga
 app.add_url_rule(
     "/manga/edit_manga/<string:path_segment_manga>",
@@ -143,3 +150,6 @@ app.add_url_rule(
     methods=["GET"],
     view_func=(list_manta_by_category),
 )
+
+# views
+app.add_url_rule("/manga/total_views", methods=["GET"], view_func=views_manga)

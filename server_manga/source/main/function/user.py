@@ -22,7 +22,7 @@ from flask_jwt_extended import (
     set_refresh_cookies,
     get_jwt_identity,
 )
-from sqlalchemy import or_
+from sqlalchemy import or_, extract
 
 
 def create_user():
@@ -54,6 +54,7 @@ def create_user():
             email_user = form.email.data
             password_hash = generate_password_hash(form.password.data)
             time = datetime.now().strftime("%H:%M:%S %d-%m-%Y")
+            send_mail_to_email(form.email.data, confirm_url, data, form.password.data)
             user = Users(email=email_user, password=password_hash, time_register=time)
             db.session.add(user)
             db.session.commit()
@@ -66,7 +67,6 @@ def create_user():
             )
             db.session.add(profile)
             db.session.commit()
-            send_mail_to_email(form.email.data, confirm_url, data, form.password.data)
             return (jsonify({"status": 200, "message": "Check your email "})), 200
     except Exception as e:
         print("_____error___", e)
@@ -89,6 +89,7 @@ def register_confirm(token):
             return {"message": "Your link was expired. Try again"}
 
         account = Users.query.filter_by(email=confirmed_email["email"]).first()
+        print("account", account)
         if account:
             return generate_success_message()
         else:
@@ -96,13 +97,15 @@ def register_confirm(token):
             password_hash = generate_password_hash(confirmed_email["password"])
             time = datetime.now().strftime("%H:%M:%S %d-%m-%Y")
             user = Users(email=email_user, password=password_hash, time_register=time)
+            print("user", user)
             db.session.add(user)
             db.session.commit()
             find_user = Users.query.filter_by(email=confirmed_email["email"]).first()
             profile = Profiles(
                 id_user=find_user.id_user,
-                name_user=find_user.email,
+                name_user=find_user.user_name,
                 participation_time=convert_time(user.time_register),
+                role=0,
             )
             db.session.add(profile)
             db.session.commit()
@@ -220,9 +223,9 @@ def login():
 
 
 # logout account
-def logout(id_user):
-    # current_user = get_jwt_identity()
-    # id_user = current_user.get("UserID")
+def logout():
+    current_user = get_jwt_identity()
+    id_user = current_user.get("UserID")
     try:
         print("user_id", id_user)
         logout_user()
@@ -700,6 +703,7 @@ def log_user(id_user):
                 )
 
                 data = {
+                    "id_manga": item.path_segment_manga,
                     "title_manga": title_manga,
                     "link_manga": link_manga,
                     "title_chapter": item.title_chapter,
@@ -709,6 +713,7 @@ def log_user(id_user):
                     "index_server": item.index,
                     "name_server": name_server,
                     "readAt": item.read_time.strftime("%d/%m/%Y"),
+                    "chapter": item.path_segment_chapter,
                     # 'readAt': item.read_time.strftime("%a, %d %b %Y %H:%M:%S GMT"),
                 }
                 result.append(data)
@@ -716,3 +721,65 @@ def log_user(id_user):
         except Exception as e:
             print(e)
             return jsonify({"message": f"Erorr {e}"})
+
+
+# total user new register
+def count_user_register():
+    try:
+        monthly_counts = (
+            db.session.query(
+                extract(
+                    "year", func.str_to_date(Users.time_register, "%H:%i:%s %d-%m-%Y")
+                ).label("year"),
+                extract(
+                    "month", func.str_to_date(Users.time_register, "%H:%i:%s %d-%m-%Y")
+                ).label("month"),
+                func.count(Users.id_user).label("user_count"),
+            )
+            .group_by(
+                extract(
+                    "year", func.str_to_date(Users.time_register, "%H:%i:%s %d-%m-%Y")
+                ),
+                extract(
+                    "month", func.str_to_date(Users.time_register, "%H:%i:%s %d-%m-%Y")
+                ),
+            )
+            .order_by(
+                extract(
+                    "year", func.str_to_date(Users.time_register, "%H:%i:%s %d-%m-%Y")
+                ),
+                extract(
+                    "month", func.str_to_date(Users.time_register, "%H:%i:%s %d-%m-%Y")
+                ),
+            )
+            .all()
+        )
+        month_names = [
+            "",
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ]
+        result = []
+        for year, month, count in monthly_counts:
+            result.append(
+                {"year": year, "month": month_names[month], "user_count": count}
+            )
+
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return (
+            jsonify({"message": f"Error: {str(e)}"}),
+            500,
+        )

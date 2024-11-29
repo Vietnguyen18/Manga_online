@@ -1,0 +1,233 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.menu-small {
+  width: 100%;
+  max-height: 80px;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  i {
+    font-size: 24px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  i:hover {
+    background-color: #27374d;
+    color: #fff;
+    border-radius: 50%;
+  }
+  .account {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+  }
+  .logo {
+    width: 200px;
+    padding: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    img {
+      object-fit: cover;
+    }
+  }
+}
+
+.sidebar-mobile {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 250px;
+  height: 100vh;
+  background-color: #d9dde2;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  transition: right 0.3s ease-in-out;
+  z-index: 1000;
+  .menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+
+    .logo {
+      text-align: center;
+      padding: 10px;
+      img {
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+      }
+    }
+
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding: 0;
+
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 12px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        color: #ffffff;
+        svg {
+          font-size: 20px;
+        }
+        &:hover {
+          background-color: #d2d5d8;
+          color: #27374d;
+        }
+        &.active {
+          background-color: #007bff;
+          color: white;
+          svg {
+            color: yellow;
+          }
+        }
+      }
+    }
+  }
+}
+
+.admin-container {
+  padding: 20px;
+  background-color: #dde6ed;
+  width: 100%;
+  .sidebar {
+    display: flex;
+    .menu {
+      flex-direction: column;
+      gap: 20px;
+      height: 100vh;
+      width: 20%;
+      .logo {
+        text-align: center;
+        padding: 20px;
+      }
+      .menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        .item {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          font-size: 20px;
+          font-weight: 600;
+          padding: 10px;
+          border-radius: 10px;
+          transition: 0.3s ease-in-out;
+          color: #27374d;
+        }
+        .item:hover {
+          background-color: #27374d;
+          color: #dde6ed;
+        }
+      }
+    }
+    .content {
+      width: 80%;
+      color: #27374d;
+      background-color: #fff;
+      border-radius: 20px;
+      padding: 20px;
+    }
+  }
+}
+
+// header
+.content-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+  .header-title {
+    color: #526d82;
+  }
+  .header-activity {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    i.icon {
+      color: #969393;
+      font-size: 24px;
+      cursor: pointer;
+      transition: 0.5s ease-in-out;
+    }
+    .search-box {
+      background-color: #dde6ed;
+      padding: 8px 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      input {
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 5px;
+      }
+    }
+    .account {
+      width: 180px;
+      align-items: center;
+      display: flex;
+      border: 1px solid #333;
+      border-radius: 10px;
+      gap: 4px;
+      margin: 0;
+      justify-content: space-between;
+      p {
+        margin: 0 auto;
+      }
+      img {
+        width: 40px;
+        border-radius: 12px;
+        padding: 3px;
+      }
+    }
+  }
+}
+
+@media screen {
+  .menu-small {
+    display: none;
+  }
+}
+
+/* Responsive cho Mobile */
+@media screen and (max-width: 767px) {
+  .menu-small {
+    display: flex;
+  }
+  .menu {
+    display: none;
+  }
+  .content {
+    width: 100% !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    background-color: #dde6ed !important;
+  }
+  .sidebar-mobile.open {
+    right: 0;
+  }
+}

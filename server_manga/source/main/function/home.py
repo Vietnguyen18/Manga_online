@@ -637,3 +637,32 @@ def currently_reading(type):
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
+
+
+# card stats
+def card_stats():
+    try:
+        LM = List_Manga
+        MU = Manga_Update
+        C = Comments
+        total_users = Users.query.count()
+        result = (
+            db.session.query(
+                func.sum(MU.views).label("total_views"),
+                func.count(LM.id_manga).label("total_manga"),
+                func.count(C.id_comment).label("total_comments"),
+            )
+            .outerjoin(LM, MU.path_segment_manga == LM.path_segment_manga)
+            .outerjoin(C, MU.path_segment_manga == C.path_segment_manga)
+            .one()
+        )
+        data = {
+            "total_views": format_with_dot(result.total_views),
+            "total_users": format_with_dot(total_users),
+            "total_listmanga": format_with_dot(result.total_manga),
+            "total_comments": format_with_dot(result.total_comments),
+        }
+        return jsonify(data)
+    except Exception as e:
+        print(e)
+        return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500

@@ -45,20 +45,24 @@
         color: #aeb1b4;
       }
     }
+    .header-notification {
+      margin: 0 20px;
+    }
+
     .account {
       display: flex;
       align-items: center;
-
-      .header-notification {
-        margin: 0 20px;
-        color: #fff;
-      }
-
       button {
         width: 150px;
         border-radius: 10px;
         background-color: #ff4401;
         color: #fff;
+      }
+      .avatar {
+        padding: 10px;
+        border: 1px solid #aeb1b4;
+        border-radius: 20px;
+        color: #333;
       }
     }
   }

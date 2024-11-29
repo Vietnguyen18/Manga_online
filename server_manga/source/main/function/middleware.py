@@ -70,3 +70,15 @@ def convert_path_image(url):
     saver.save(os.path.join(app.config["UPLOAD_FOLDER"], pic_name))
     image_url = split_join(request.url) + f"/image/avatar/{pic_name}/"
     return image_url
+
+
+def format_number(value):
+    if value >= 1_000_000:  # Hơn 1 triệu
+        return f"{value / 1_000_000:.1f}M"  # Định dạng thành triệu
+    elif value >= 1_000:  # Hơn 1 nghìn
+        return f"{value / 1_000:.1f}K"  # Định dạng thành nghìn
+    return str(value)  # Giá trị nhỏ hơn 1000, giữ nguyên
+
+
+def format_with_dot(value):
+    return f"{value:,}"

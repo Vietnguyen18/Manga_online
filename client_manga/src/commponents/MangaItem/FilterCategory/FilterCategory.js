@@ -6,7 +6,6 @@ import { CiStar } from "react-icons/ci";
 import "./FilterCate.scss";
 import { FaFlag } from "react-icons/fa";
 import { Pagination } from "antd";
-import Loading from "../../Loading/Loading";
 
 const FilterCategory = () => {
   const { category, page } = useParams();
