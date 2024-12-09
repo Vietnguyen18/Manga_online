@@ -13,29 +13,32 @@ const SideBar = () => {
         </NavLink>
       </div>
       <div className="menu-list">
-        <NavLink to="/admin/dashboard" className="item">
+        <NavLink
+          to="/admin/dashboard"
+          className={({ isActive }) => (isActive ? "item active" : "item")}
+        >
           <i className="icon">
             <BiTask />
           </i>
           Dashboard
         </NavLink>
-        <NavLink to="/admin/user" className="item">
+        <NavLink
+          to="/admin/user"
+          className={({ isActive }) => (isActive ? "item active" : "item")}
+        >
           <i className="icon">
             <BiUser />
           </i>
           User
         </NavLink>
-        <NavLink to="/admin/books" className="item">
+        <NavLink
+          to="/admin/books"
+          className={({ isActive }) => (isActive ? "item active" : "item")}
+        >
           <i className="icon">
             <BiBook />
           </i>
           Books
-        </NavLink>
-        <NavLink to="/admin/report" className="item">
-          <i className="icon">
-            <BiSolidReport />
-          </i>
-          Report
         </NavLink>
       </div>
     </div>

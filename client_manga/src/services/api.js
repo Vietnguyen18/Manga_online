@@ -7,8 +7,17 @@ export const callRefeshToken = () => {
   return instance.post("/refresh_token");
 };
 
-export const fetchAccount = async () => {
-  const req = await instance.get("/user/list_all_user");
+// api get all user
+export const fetchAccount = async (page, search) => {
+  const req = await instance.get(
+    `/user/list_all_user?page=${page}&search=${search}`
+  );
+  return req.data;
+};
+
+// api get user by id
+export const fetchUserByID = async (id) => {
+  const req = await instance.get(`/get_user_by_id/${id}`);
   return req.data;
 };
 
@@ -116,7 +125,7 @@ export const ViewsManga = async () => {
 // api filter manga
 export const FilterManga = async (search, page) => {
   const response = await instance.get(
-    `http://127.0.0.1:7979/manga/filter_manga/1?search=${search}&page=${page}`
+    `/manga/filter_manga/1?search=${search}&page=${page}`
   );
   return response.data;
 };
@@ -125,4 +134,69 @@ export const FilterManga = async (search, page) => {
 export const CardStats = async () => {
   const response = await instance.get("/card_stats");
   return response;
+};
+
+// api create user
+export const CreateUser = async (formData) => {
+  const response = await instance.post(`/user/create_user`, formData);
+  return response.data;
+};
+
+// api edit user
+export const EditUser = async (id_user, name_user, email, role) => {
+  const response = await instance.patch(`/edit_user/${id_user}`, {
+    name_user: name_user,
+    email: email,
+    role: role,
+  });
+  return response.data;
+};
+
+// api delete user
+export const DeleteUser = async (id_user) => {
+  const response = await instance.delete(`/delete_user/${id_user}`);
+
+  return response.data;
+};
+
+// api edit manga
+export const EditManga = async (id_manga, formData) => {
+  const response = await instance.patch(
+    `/manga/edit_manga/${id_manga}`,
+    formData
+  );
+
+  return response.data;
+};
+// api list all chapter
+export const ListAllChapter = async (id) => {
+  const response = await instance.get(`/manga/list_chapter/${id}`);
+  return response.data;
+};
+
+// api delete manga
+export const DeleteManga = async (id_manga, id_chapter) => {
+  const response = await instance.delete(
+    `/manga/delete_manga/${id_manga}/${id_chapter}`
+  );
+  return response.data;
+};
+
+// api change profile
+export const ChangeProfile = async (idUser, formData) => {
+  const response = await instance.patch(
+    `/change_profile_user/${idUser}`,
+    formData
+  );
+  return response.data;
+};
+
+// api create manga
+export const CreateManga = async (formData) => {
+  const response = await instance.post(`/manga/create_manga_new`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
 };

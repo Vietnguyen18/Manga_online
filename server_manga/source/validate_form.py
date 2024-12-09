@@ -7,6 +7,7 @@ from wtforms import (
     SelectField,
     HiddenField,
     IntegerField,
+    BooleanField,
 )
 from wtforms.validators import (
     DataRequired,
@@ -65,7 +66,7 @@ class LoginForm(FlaskForm):
 
 class ChangeProfile(FlaskForm):
     name_user = StringField("Name")
-    date_of_birth = DateField("Date of birth", format="%d/%m/%Y")
+    date_of_birth = DateField("Date of birth", format="%Y-%m-%d")
     gender = SelectField(
         "Gender",
         choices=[
@@ -129,12 +130,7 @@ class SwitchForm(FlaskForm):
 
 class NewMangaForm(FlaskForm):
     title_manga = StringField("Title", validators=[DataRequired()])
-    path_segment_manga = StringField("Path", validators=[DataRequired()])
     descript_manga = StringField("Description", validators=[DataRequired()])
-    poster_upload = FileField(
-        "poster_upload",
-        validators=[FileAllowed(["jpg", "png", "bmp", "jpeg"], "poster_upload only!")],
-    )
     poster_original = FileField(
         "poster_original",
         validators=[
@@ -146,5 +142,41 @@ class NewMangaForm(FlaskForm):
     chapters = StringField("chapters", validators=[DataRequired()])
     status = StringField("status", validators=[DataRequired()])
     author = StringField("author", validators=[DataRequired()])
-    id_server = StringField("Id_server", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+
+class EditUserForm(FlaskForm):
+    name_user = StringField("name", validators=[DataRequired()])
+    email = StringField("email", validators=[DataRequired(), Email()])
+    role = SelectField(
+        "role",
+        choices=[("Member", "False"), ("Admin", "True")],
+        validators=[DataRequired()],
+    )
+    submit = SubmitField("Submit")
+
+
+class CreateUserForm(FlaskForm):
+    name_user = StringField("Name")
+    date_of_birth = DateField("Date of birth", format="%d/%m/%Y")
+    gender = SelectField(
+        "Gender",
+        choices=[
+            ("female", "Female"),
+            ("male", "Male"),
+            ("undisclosed", "Undisclosed"),
+        ],
+    )
+    job = StringField("Job")
+    email = StringField("email", validators=[DataRequired(), Email()])
+    avatar_user = FileField(
+        "Images",
+        validators=[FileAllowed(["jpg", "png", "bmp", "jpeg"], "Images only!")],
+    )
+    role = SelectField(
+        "role",
+        choices=[("Member", "False"), ("Admin", "True")],
+        validators=[DataRequired()],
+    )
+    introduction = StringField("Introduction")
     submit = SubmitField("Submit")

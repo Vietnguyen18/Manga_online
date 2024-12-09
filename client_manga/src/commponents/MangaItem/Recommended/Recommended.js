@@ -72,7 +72,7 @@ const Recommended = () => {
                     <>
                       <li className="grid-item">
                         <div className="book_avatar">
-                          <a href={e.url_manga} title={e.url_manga}>
+                          <a href={e.url_manga} title={e.title_manga}>
                             <img
                               src={e.image_poster_link_goc}
                               alt={e.title_manga}

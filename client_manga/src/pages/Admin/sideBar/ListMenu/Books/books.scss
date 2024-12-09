@@ -1,8 +1,8 @@
 // container user
-.container-user {
+.container_list_manga {
   padding: 20px;
   // books
-  .content-user {
+  .content_list_manga {
     width: 100%;
     min-height: 200px;
     .table-container {
@@ -107,7 +107,7 @@
           }
         }
       }
-      .pagination-user {
+      .pagination-manga {
         text-align: center !important;
         padding: 20px;
         display: flex;
@@ -127,8 +127,7 @@
 .form_create {
   padding: 5px;
 }
-
-.avatar-user {
+.poster-manga {
   img {
     width: 200px;
     display: flex;

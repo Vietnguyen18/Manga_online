@@ -5,7 +5,6 @@ import "../dashboard.scss";
 import { CardStats } from "../../../../../../services/api";
 const Information = () => {
   const [cardStats, setCardStats] = useState("");
-  console.log("card", cardStats);
 
   useEffect(() => {
     fetchCardStats();

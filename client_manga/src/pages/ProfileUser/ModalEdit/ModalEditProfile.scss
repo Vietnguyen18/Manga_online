@@ -1,0 +1,18 @@
+.btn-modal {
+  display: flex;
+  margin: 10px;
+}
+.form-edit,
+.form_create {
+  padding: 5px;
+}
+.avatar-profile {
+  img {
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    max-height: 300px;
+  }
+}

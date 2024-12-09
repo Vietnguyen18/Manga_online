@@ -3,7 +3,7 @@ from source import app
 from source.main.function.__init__ import *
 
 # register
-app.add_url_rule("/register", methods=["POST"], view_func=create_user)
+app.add_url_rule("/register", methods=["POST"], view_func=register)
 
 app.add_url_rule("/register", methods=["GET"], view_func=register_handle_get)
 # comfirm register
@@ -42,9 +42,9 @@ app.add_url_rule(
 
 # get user by userid
 app.add_url_rule(
-    "/user/<int:id_user>",
+    "/get_user_by_id/<int:id_user>",
     methods=["GET"],
-    view_func=jwt_required()(get_user),
+    view_func=(get_user),
 )
 # get user new
 app.add_url_rule(
@@ -56,7 +56,7 @@ app.add_url_rule(
 app.add_url_rule(
     "/change_profile_user/<int:id_user>",
     methods=["PATCH"],
-    view_func=jwt_required()(change_profile_user),
+    view_func=(change_profile_user),
 )
 # upload avatar
 app.add_url_rule(
@@ -65,11 +65,17 @@ app.add_url_rule(
     view_func=(get_file),
 )
 
+# create_user_by_admin
+app.add_url_rule("/user/create_user", methods=["POST"], view_func=create_user_by_admin)
+
+# edit user
+app.add_url_rule("/edit_user/<int:id_user>", methods=["PATCH"], view_func=edit_user)
+
 # delete user
 app.add_url_rule(
-    "/delete_user",
+    "/delete_user/<int:id_user>",
     methods=["DELETE"],
-    view_func=jwt_required()(delete_user),
+    view_func=(delete_user),
 )
 # get log_user
 app.add_url_rule(

@@ -5,7 +5,7 @@ from source.main.function.__init__ import *
 
 # create new manga
 app.add_url_rule(
-    "/manga/create_new_manga",
+    "/manga/create_manga_new",
     methods=["POST"],
     view_func=jwt_required()(create_manga_new),
 )
@@ -27,14 +27,14 @@ app.add_url_rule(
 app.add_url_rule(
     "/manga/edit_manga/<string:path_segment_manga>",
     methods=["PATCH"],
-    view_func=jwt_required()(edit_manga),
+    view_func=(edit_manga),
 )
 
 # delete manga
 app.add_url_rule(
     "/manga/delete_manga/<string:path_segment_manga>/<string:path_segment_chapter>",
     methods=["DELETE"],
-    view_func=jwt_required()(delete_manga),
+    view_func=(delete_manga),
 )
 
 # get list manga by path
@@ -153,3 +153,8 @@ app.add_url_rule(
 
 # views
 app.add_url_rule("/manga/total_views", methods=["GET"], view_func=views_manga)
+
+# list chapter
+app.add_url_rule(
+    "/manga/list_chapter/<string:id_manga>", methods=["GET"], view_func=list_all_chapter
+)

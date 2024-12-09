@@ -47,7 +47,7 @@ instance.interceptors.response.use(
   },
   async function (error) {
     const originalConfig = error.config;
-    const userId = localStorage.getItem("user_id"); // Assuming the user ID is stored in localStorage
+    const userId = localStorage.getItem("id_user");
 
     // Handle 401 errors (Unauthorized)
     if (

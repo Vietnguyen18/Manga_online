@@ -9,6 +9,8 @@ import { IoMdCloudDownload } from "react-icons/io";
 const Home = () => {
   const navigate = useNavigate();
   const [listDataNew, setListDataNew] = useState([]);
+  console.log("data", listDataNew);
+
   const [listDataRecommend, setListDataRecommend] = useState([]);
   // random page
   let randomPage = Math.floor(Math.random() * 10) + 1;
@@ -77,7 +79,7 @@ const Home = () => {
                     <>
                       <li className="grid-item" key={index}>
                         <div className="book_avatar">
-                          <a href={e.url_manga} title={e.url_manga}>
+                          <a href={e.url_manga} title={e.title_manga}>
                             <img
                               src={e.image_poster_link_goc}
                               alt={e.title_manga}
@@ -154,7 +156,7 @@ const Home = () => {
                     <>
                       <li className="grid-item">
                         <div className="book_avatar">
-                          <a href={e.url_manga} title={e.url_manga}>
+                          <a href={e.url_manga} title={e.title_manga}>
                             <img
                               src={e.image_poster_link_goc}
                               alt={e.title_manga}

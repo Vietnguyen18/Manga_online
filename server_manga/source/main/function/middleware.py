@@ -68,7 +68,7 @@ def convert_path_image(url):
     pic_name = f"{formatted}-{pic_filename}"
     saver = url
     saver.save(os.path.join(app.config["UPLOAD_FOLDER"], pic_name))
-    image_url = split_join(request.url) + f"/image/avatar/{pic_name}/"
+    image_url = split_join(request.url) + f"/image/avatar/{pic_name}"
     return image_url
 
 
@@ -82,3 +82,8 @@ def format_number(value):
 
 def format_with_dot(value):
     return f"{value:,}"
+
+
+def shorten_id(url):
+    parts = url.split("/")
+    return parts[-1]

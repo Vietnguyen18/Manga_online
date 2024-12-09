@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Pagination } from "antd";
 import "../dashboard.scss";
 import { FilterManga } from "../../../../../../services/api";
+import { formatViews } from "../../../../../../utils/extend";
 
-const Books = () => {
+const ListBooks = ({ search }) => {
   const [listBook, setListBook] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isTotalPage, setIsTotalPage] = useState(null);
 
-  const search = "S";
   const page = currentPage;
   useEffect(() => {
     const fetchFilterManga = async () => {
@@ -21,18 +21,6 @@ const Books = () => {
 
   const handlePaginationChange = (page) => {
     setCurrentPage(page);
-  };
-  //   format views
-  const formatViews = (views) => {
-    if (views < 1000) {
-      return views;
-    } else if (views < 1000000) {
-      return (views / 1000).toFixed(1) + "K";
-    } else if (views < 1000000000) {
-      return (views / 1000000).toFixed(1) + "M";
-    } else {
-      return (views / 1000000000).toFixed(1) + "B";
-    }
   };
   return (
     <div className="content-book">
@@ -87,4 +75,4 @@ const Books = () => {
   );
 };
 
-export default Books;
+export default ListBooks;

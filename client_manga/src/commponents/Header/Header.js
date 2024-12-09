@@ -3,11 +3,11 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo_3.png";
 import avatar from "../../assets/avatar-15-64.png";
 import "./Header.scss";
-import { Dropdown, Space, Avatar, List, notification } from "antd";
+import { Dropdown, Space, Avatar, List, notification, message } from "antd";
 import { memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { doLogoutAction } from "../../redux/account/accountSlice";
-import { callLogout, fetchAccount } from "../../services/api";
+import { callLogout, fetchUserByID } from "../../services/api";
 import axios from "axios";
 import { doSearch } from "../../redux/search/searchSlice";
 import { HiOutlineLightBulb } from "react-icons/hi";
@@ -16,6 +16,7 @@ import { IoIosNotifications } from "react-icons/io";
 import React from "react";
 import ModalAccount from "../Auth/ModalAccount/ModalAccount";
 import NavBar from "./NavBar";
+import { removeVietnameseTones } from "../../utils/extend";
 
 const Header = ({ isLight, setIsLight }) => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const Header = ({ isLight, setIsLight }) => {
   const datauser = useSelector((state) => state.account.dataUser);
   const [isShowModalLogin, setIsShowModalLogin] = useState(false);
   const [apiUser, setApiUser] = useState([]);
+  const [nameUser, setNameUser] = useState("");
 
   // thay doi gia dien
   useEffect(() => {
@@ -42,19 +44,15 @@ const Header = ({ isLight, setIsLight }) => {
     const FetchUserData = async () => {
       try {
         if (datauser?.id_user) {
-          const useList = await fetchAccount();
-          const user = useList.list_all_user;
-          const fetchedUser = user.find(
-            (user) => user?.id_user === datauser?.id_user
-          );
-          fetchedUser && setApiUser(fetchedUser);
+          const user = await fetchUserByID(datauser?.id_user);
+          setApiUser(user);
+          setNameUser(removeVietnameseTones(user?.name_user));
+        } else {
+          message.error("Please log in to use full functionality");
         }
       } catch (er) {
         console.error("Error fetching user data: ", er);
-        notification.error({
-          message: "Error",
-          description: "Failed to fetch user data",
-        });
+        message.error("Failed to fetch user data");
       }
     };
     FetchUserData();
@@ -62,7 +60,7 @@ const Header = ({ isLight, setIsLight }) => {
 
   let items = [
     {
-      label: <Link to="/userprofile">Trang profile</Link>,
+      label: <Link to={`/profile/${nameUser}`}>Trang profile</Link>,
       key: "userprofile",
     },
 
@@ -94,7 +92,7 @@ const Header = ({ isLight, setIsLight }) => {
       localStorage.removeItem("access_token");
       dispatch(doLogoutAction());
       navigate("/");
-      // message.success("Đăng xuất thành công!");
+      message.success("Đăng xuất thành công!");
     } else {
       notification.error({
         message: "Có lỗi xáy ra",

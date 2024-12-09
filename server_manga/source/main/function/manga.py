@@ -26,24 +26,46 @@ from sqlalchemy import or_
 import math
 import re
 from source.main.function.middleware import *
+import uuid
+import string
 
 
 # create manga
 def create_manga_new():
-    form = NewMangaForm()
-    current_user = get_jwt_identity()
-    id_user = current_user.get("UserID")
     try:
-        id_server = get_id_server(form.id_server.data)
-        poster_upload = convert_path_image(form.poster_upload.data)
-        poster_original = convert_path_image(form.poster_original.data)
+        form = NewMangaForm()
+        current_user = get_jwt_identity()
+        id_user = current_user.get("UserID")
+
+        localhost = split_join(request.url)
+        # Tạo ID ngẫu nhiên
+        random_letters = "".join(
+            random.choices(string.ascii_lowercase, k=2)
+        )  # 2 chữ cái thường
+        random_digits = "".join(random.choices(string.digits, k=6))  # 6 chữ số
+        random_id = f"{random_letters}{random_digits}"
+
+        # Tạo id_manga
+        id_manga = f"{localhost}/rmanga/manga-{random_id}"
+
+        # Tạo path_segment_manga từ id_manga
+        path_segment_manga = f"manga-{random_id}"
+        # poster
+        default_poster = "https://img.freepik.com/free-vector/404-error-with-landscape-concept-illustration_114360-7898.jpg"
+
+        poster_original = (
+            convert_path_image(form.poster_original.data)
+            if form.poster_original.data
+            else default_poster
+        )
+        id_server = get_id_server(1)
         if form.validate_on_submit():
             new_manga = List_Manga(
-                id_manga=form.path_segment_manga.data,
-                path_segment_manga=form.path_segment_manga.data,
+                id_manga=id_manga,
+                path_segment_manga=path_segment_manga,
                 title_manga=form.title_manga.data,
                 descript_manga=form.descript_manga.data,
-                poster_upload=poster_upload,
+                poster_upload=poster_original,
                 poster_original=poster_original,
                 detail_manga=form.detail_manga.data,
                 categories=form.categories.data,
@@ -56,15 +78,17 @@ def create_manga_new():
             )
             db.session.add(new_manga)
             db.session.commit()
+
             profile = Profiles.query.filter_by(id_user=id_user).first()
             if profile is None:
-                return jsonify({"message": " User not found"}), 404
+                return jsonify({"message": "User not found"}), 404
+
             manga = {
-                "id_manga": form.path_segment_manga.data,
-                "path_segment_manga": form.path_segment_manga.data,
+                "id_manga": id_manga,
+                "path_segment_manga": path_segment_manga,
                 "title_manga": form.title_manga.data,
                 "descript_manga": form.descript_manga.data,
-                "poster_upload": poster_upload,
+                "poster_upload": poster_original,
                 "poster_original": poster_original,
                 "detail_manga": form.detail_manga.data,
                 "categories": form.categories.data,
@@ -73,18 +97,26 @@ def create_manga_new():
                 "views_original": "0",
                 "status": form.status.data,
                 "author": form.author.data,
-                "id_server": id_server,
                 "user_name": profile.name_user,
                 "id_user": id_user,
+                "id_server": id_server,
                 "role": profile.role,
             }
             return (
-                jsonify({"new_manga": manga, "message": "Add new manga successfully"}),
+                jsonify(
+                    {
+                        "new_manga": manga,
+                        "message": "Add new manga successfully",
+                        "status": 200,
+                    }
+                ),
                 200,
             )
+        else:
+            return jsonify({"errMsg": "Invalid form data", "errors": form.errors}), 400
 
     except Exception as e:
-        print(e)
+        print("error", e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
 
 
@@ -96,7 +128,8 @@ def get_all_data(index):
         total_page = 0
         number_item = 0
         id_server = get_id_server(index)
-        query = List_Manga.query.filter_by(id_server=id_server).all()
+        query = List_Manga.query.filter_by(id_server=id_server)
+
         if page:
             limit = 20
             total_page = math.ceil(len(query) / limit)
@@ -181,6 +214,8 @@ def filter_manga(index):
                 List_Manga.categories.ilike(f"%{search}%"),
                 List_Manga.author.ilike(f"%{search}%"),
                 List_Manga.title_manga.ilike(f"%{search}%"),
+                List_Manga.path_segment_manga.ilike(f"%{search}%"),
+                List_Manga.id_manga.ilike(f"%{search}%"),
             )
             base_query = base_query.filter(search_filter)
 
@@ -201,6 +236,7 @@ def filter_manga(index):
                 "genres": genres,
                 "id_manga": item.id_manga,
                 "title": item.title_manga,
+                "description": item.descript_manga,
                 "poster": item.poster_original,
                 "categories": item.categories,
                 "rate": item.rate,
@@ -208,6 +244,7 @@ def filter_manga(index):
                 "status": item.status,
                 "author": item.author,
                 "comments": item.comments,
+                "path_segment_manga": item.path_segment_manga,
             }
             data.append(list_all_manga)
 
@@ -344,10 +381,7 @@ def get_Listnovel(path):
 # edit manga
 def edit_manga(path_segment_manga):
     form = NewMangaForm()
-    current_user = get_jwt_identity()
-    id_user = current_user.get("UserID")
     try:
-        id_server = get_id_server(form.id_server.data)
         if path_segment_manga is None:
             return jsonify({"message": " This link has no data, please try again"}), 403
         manga = (
@@ -355,44 +389,30 @@ def edit_manga(path_segment_manga):
             .order_by(List_Manga.id_manga.desc())
             .first()
         )
-        poster_upload = convert_path_image(form.poster_upload.data)
-        poster_original = convert_path_image(form.poster_original.data)
+        if form.poster_original.data:
+            poster_original = convert_path_image(form.poster_original.data)
+        else:
+            poster_original = manga.poster_original
         if manga:
             manga.title_manga = form.title_manga.data
-            manga.descript_manga = form.descript_manga.data
-            manga.poster_upload = form.poster_upload.data
-            manga.poster_original = form.poster_original.data
-            manga.detail_manga = form.detail_manga.data
+            manga.poster_original = poster_original
             manga.categories = form.categories.data
-            manga.chapters = form.chapters.data
-            manga.status = form.status.data
             manga.author = form.author.data
             db.session.commit()
-        profile = Profiles.query.filter_by(id_user=id_user).first()
-        if profile is None:
-            return jsonify({"message": " User not found"}), 404
         manga_update = {
             "id_manga": form.path_segment_manga.data,
-            "path_segment_manga": form.path_segment_manga.data,
             "title_manga": form.title_manga.data,
-            "descript_manga": form.descript_manga.data,
-            "poster_upload": poster_upload,
             "poster_original": poster_original,
-            "detail_manga": form.detail_manga.data,
             "categories": form.categories.data,
-            "chapters": form.chapters.data,
-            "rate": "0",
-            "views_original": "0",
-            "status": form.status.data,
             "author": form.author.data,
-            "id_server": id_server,
-            "user_name": profile.name_user,
-            "id_user": id_user,
-            "role": profile.role,
         }
         return (
             jsonify(
-                {"manga_update": manga_update, "message": "Update manga successfully"}
+                {
+                    "manga_update": manga_update,
+                    "message": "Update manga successfully",
+                    "status": 200,
+                }
             ),
             200,
         )
@@ -403,18 +423,10 @@ def edit_manga(path_segment_manga):
 
 # delete manga
 def delete_manga(path_segment_manga, path_segment_chapter):
-    current_user = get_jwt_identity()
-    id_user = current_user.get("UserID")
     path_segment = f"{path_segment_manga}-{path_segment_chapter}"
     print(current_user)
     try:
-        if id_user is None:
-            print(id_user)
-            return (
-                jsonify({"error": "Account does not exist"}),
-                400,
-            )
-        comments = Comments.query.filter_by(id_user=id_user).all()
+        comments = Comments.query.filter_by(path_segment_manga=path_segment_manga).all()
 
         for comment in comments:
             LikesComment.query.filter_by(id_comment=comment.id_comment).delete()
@@ -429,10 +441,10 @@ def delete_manga(path_segment_manga, path_segment_chapter):
         LogUser.query.filter_by(path_segment_manga=path_segment_manga).delete()
         Manga_Update.query.filter_by(path_segment_manga=path_segment_manga).delete()
         db.session.commit()
-        return jsonify({"message": "Manga deleted successfully"})
+        return jsonify({"message": "Manga deleted successfully", "status": 200}), 200
 
     except Exception as e:
-        print("error", str(exit))
+        print("error", str(e))
         jsonify(
             {"status": 500, "message": "need to fill in all email and password fields"}
         ), 500
@@ -1062,6 +1074,27 @@ def views_manga():
             views.append(data)
         return jsonify(views)
 
+    except Exception as e:
+        print(e)
+        return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
+
+
+# list all chapter manga by id manga
+def list_all_chapter(id_manga):
+    try:
+        chapters = List_Chapter.query.filter(
+            List_Chapter.id_manga.like(f"%{id_manga}%")
+        ).all()
+        data = []
+        for item in chapters:
+            data.append(
+                {
+                    "id_manga": shorten_id(item.id_manga),
+                    "path_segment_chapter": item.path_segment_chapter,
+                    "id_chapter": item.id_chapter,
+                }
+            )
+        return jsonify({"data": data, "status": 200}), 200
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500

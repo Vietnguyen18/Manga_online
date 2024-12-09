@@ -20,6 +20,8 @@ import { useState } from "react";
 import Admin from "./pages/Admin/Admin";
 import DashBoard from "./pages/Admin/sideBar/ListMenu/DashBoard/DashBoard";
 import User from "./pages/Admin/sideBar/ListMenu/User/User";
+import Books from "./pages/Admin/sideBar/ListMenu/Books/Books";
+import ProfileUser from "./pages/ProfileUser/ProfileUser";
 
 const Layout = () => {
   const [isLight, setIsLight] = useState(true);
@@ -97,7 +99,15 @@ function App() {
           path: "/admin/user",
           element: <User />,
         },
+        {
+          path: "/admin/books",
+          element: <Books />,
+        },
       ],
+    },
+    {
+      path: "/profile/:nameUser",
+      element: <ProfileUser />,
     },
   ];
   const router = createBrowserRouter(item);

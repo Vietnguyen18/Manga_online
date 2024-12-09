@@ -22,17 +22,17 @@ from flask_jwt_extended import (
     set_refresh_cookies,
     get_jwt_identity,
 )
-from sqlalchemy import or_, extract
+from sqlalchemy import or_, extract, func
+from source.main.function.middleware import *
 
 
-def create_user():
+def register():
     try:
         form = RegisterForm()
         print(
             "_______________________________________register_handle_post vao phan dang ky tai khoan_____"
         )
         print(form.email.data)
-        # if form.validate_on_submit():
         account = Users.query.filter_by(email=form.email.data).first()
         if account:
             return jsonify({"message": "Account already exists!"}), 400
@@ -212,6 +212,13 @@ def login():
                     return jsonify(errCode=401, message="Incorrect password!")
             else:
                 return jsonify(errCode=404, message="Account does not exist!")
+        else:
+            return (
+                jsonify(
+                    {"message": "Form validation failed. Please check your input."}
+                ),
+                400,
+            )
     except Exception as e:
         print(e)
         return (
@@ -244,25 +251,36 @@ def logout():
 # changepassword
 def change_password(id):
     form = SettingPasswordForm()
-    if form.validate_on_submit():
-        current_password = form.current_password.data
-        new_password = form.new_password.data
-        confirm_password = form.confirm_password.data
-        account = Users.query.get_or_404(id)
+    try:
+        if form.validate_on_submit():
+            current_password = form.current_password.data
+            new_password = form.new_password.data
+            confirm_password = form.confirm_password.data
+            account = Users.query.get_or_404(id)
 
-        is_password_correct = check_password_hash(account.password, current_password)
-        if not is_password_correct:
-            return jsonify(message="Incorrect current password"), 400
+            is_password_correct = check_password_hash(
+                account.password, current_password
+            )
+            if not is_password_correct:
+                return jsonify(message="Incorrect current password"), 400
+            else:
+                hashed_password = generate_password_hash(new_password)
+                account.password = hashed_password
+                db.session.commit()
+                return (
+                    jsonify(
+                        message="Change Password Successful",
+                    )
+                ), 200
         else:
-            hashed_password = generate_password_hash(new_password)
-            account.password = hashed_password
-            db.session.commit()
             return (
                 jsonify(
-                    message="Change Password Successful",
-                )
-            ), 200
-    return jsonify(errors=form.errors), 400
+                    {"message": "Form validation failed. Please check your input."}
+                ),
+                400,
+            )
+    except Exception as e:
+        return {"errMsg": "Something went wrong!", "errCode": str(e)}, 500
 
 
 # fogot_password
@@ -356,12 +374,32 @@ def user_new():
 def get_all_user():
     list_all_user = []
     try:
-        user = (
-            db.session.query(Users, Profiles)
-            .join(Users, Profiles.id_user == Users.id_user)
+        page = int(request.args.get("page", default=1))
+        search = request.args.get("search", default=None)
+        limit = 10
+        offset = (page - 1) * limit
+        total_page = 0
+        user = db.session.query(Users, Profiles).join(
+            Users, Profiles.id_user == Users.id_user
+        )
+        if search:
+            search_filter = or_(
+                Profiles.name_user.ilike(f"%{search}%"),
+                Profiles.role.ilike(f"%{search}%"),
+                Users.email.ilike(f"%{search}%"),
+            )
+            user = user.filter(search_filter)
+        total_items = user.count()
+        total_page = math.ceil(total_items / limit)
+        users = (
+            user.order_by(
+                func.str_to_date(Users.time_register, "%H:%i:%s %d-%m-%Y").desc()
+            )
+            .limit(limit)
+            .offset(offset)
             .all()
         )
-        for account, profile in user:
+        for account, profile in users:
             data = {
                 "id_user": account.id_user,
                 "email": account.email,
@@ -374,9 +412,12 @@ def get_all_user():
                 "gender": profile.gender,
                 "introduction": profile.introduction,
                 "job": profile.job,
+                "role": profile.role,
             }
             list_all_user.append(data)
-        return jsonify({"list_all_user": list_all_user})
+        return jsonify(
+            {"status": 200, "list_all_user": list_all_user, "total_page": total_page}
+        )
     except Exception as e:
         print(e)
         return jsonify({"message": "User does not exist"}), 404
@@ -397,6 +438,7 @@ def get_user(id_user):
             "gender": profile.gender,
             "introduction": profile.introduction,
             "job": profile.job,
+            "role": profile.role,
         }
         return jsonify(result), 200
     else:
@@ -406,7 +448,6 @@ def get_user(id_user):
 # change profile user
 def change_profile_user(id_user):
     form = ChangeProfile()
-    id_user = id_user
     profile_user = Profiles.query.get_or_404(id_user)
 
     result = []
@@ -414,22 +455,22 @@ def change_profile_user(id_user):
         user = {}
         if form.name_user.data:
             profile_user.name_user = form.name_user.data
-            user["Name User"] = profile_user.name_user
+            user["nameUser"] = profile_user.name_user
 
         if form.date_of_birth.data:
-            profile_user.date_of_birth = form.date_of_birth.data.strftime("%d/%m/%Y")
-            user["Date of birth"] = profile_user.date_of_birth
+            profile_user.date_of_birth = form.date_of_birth.data.strftime("%Y-%m-%d")
+            user["dateOfBirth"] = profile_user.date_of_birth
 
         if form.gender.data:
             profile_user.gender = form.gender.data
-            user["Gender"] = profile_user.gender
+            user["gender"] = profile_user.gender
         if form.introduction.data:
             profile_user.introduction = form.introduction.data
-            user["Introduction"] = profile_user.introduction
+            user["introduction"] = profile_user.introduction
 
         if form.job.data:
             profile_user.job = form.job.data
-            user["Job"] = profile_user.job
+            user["job"] = profile_user.job
 
         if form.avatar_user.data:
             avatar_file = form.avatar_user.data
@@ -438,10 +479,10 @@ def change_profile_user(id_user):
             pic_name = f"{formatted}-{pic_filename}"
             saver = form.avatar_user.data
             saver.save(os.path.join(app.config["UPLOAD_FOLDER"], pic_name))
-            image_url = split_join(request.url) + f"/image/avatar/{pic_name}/"
+            image_url = split_join(request.url) + f"/image/avatar/{pic_name}"
             profile_user.avatar_user = image_url
 
-            user["Avatar"] = image_url
+            user["avatar"] = image_url
         result.append(user)
         if result:
             db.session.commit()
@@ -470,18 +511,93 @@ def get_file(file_name):
         jsonify({"status": 404, "message": f"Error exception: {e}"}), 404
 
 
-# delete user
-def delete_user():
-    current_user = get_jwt_identity()
-    id_user = current_user.get("UserID")
-    print(current_user)
+# create user by admin
+def create_user_by_admin():
     try:
-        if id_user is None:
-            print(id_user)
+        form = CreateUserForm()
+        password = "newpassword"
+        account = Users.query.filter_by(email=form.email.data).first()
+        if account:
+            return jsonify({"message": "Account already exists!"}), 400
+        else:
+            email_user = form.email.data
+            password_hash = generate_password_hash(password)
+            time = datetime.now().strftime("%H:%M:%S %d-%m-%Y")
+            user = Users(email=email_user, password=password_hash, time_register=time)
+            db.session.add(user)
+            find_user = Users.query.filter_by(email=form.email.data).first()
+            profile = Profiles(
+                id_user=find_user.id_user,
+                name_user=form.name_user.data,
+                participation_time=convert_time(user.time_register),
+                avatar_user=convert_path_image(form.avatar_user.data),
+                date_of_birth=form.date_of_birth.data,
+                gender=form.gender.data,
+                introduction=form.introduction.data,
+                job=form.job.data,
+                role=form.role.data == "Admin",
+            )
+            db.session.add(profile)
+        db.session.commit()
+        return (
+            jsonify({"status": 200, "message": " New user created successfully "})
+        ), 200
+    except Exception as e:
+        print("_____error___", e)
+        return {"errMsg": "Something went wrong!", "errCode": str(e)}, 500
+
+
+# edit user
+def edit_user(id_user):
+    form = EditUserForm()
+    profile_user = Profiles.query.get_or_404(id_user)
+    try:
+        if form.validate_on_submit():
+            user_data = {}
+            if form.name_user.data:
+                profile_user.name_user = form.name_user.data
+                user_data["name_user"] = profile_user.name_user
+
+            if form.email.data:
+                profile_user.email = form.email.data
+                user_data["email"] = profile_user.email
+
+            if form.role.data:
+                print("role", form.role.data)
+                profile_user.role = form.role.data == "Admin"
+                user_data["role"] = profile_user.role
+
+            if user_data:
+                db.session.commit()
+                return (
+                    jsonify(
+                        {
+                            "message": "Edit user success !",
+                            "data": user_data,
+                            "status": 200,
+                        }
+                    ),
+                    200,
+                )
+            else:
+                return jsonify({"message": "No information user"}), 403
+        else:
             return (
-                jsonify({"error": "Account does not exist"}),
+                jsonify(
+                    {"message": "Form validation failed. Please check your input."}
+                ),
                 400,
             )
+    except Exception as e:
+        print("Error", e)
+        return jsonify({"status": 404, "message": f"No {id_user} found with data"}), 404
+
+
+# delete user
+def delete_user(id_user):
+    try:
+        RefreshTokens.query.filter_by(UserID=id_user).delete()
+
         comments = Comments.query.filter_by(id_user=id_user).all()
 
         for comment in comments:
@@ -494,14 +610,19 @@ def delete_user():
         TrackingUser.query.filter_by(id_user=id_user).delete()
         Profiles.query.filter_by(id_user=id_user).delete()
         Users.query.filter(Users.id_user == id_user).delete()
+
         db.session.commit()
-        return jsonify({"message": "User deleted successfully"})
+
+        return jsonify({"message": "User deleted successfully", "status": 200}), 200
 
     except Exception as e:
-        print("error", str(exit))
-        jsonify(
-            {"status": 500, "message": "need to fill in all email and password fields"}
-        ), 500
+        print("error", str(e))
+        return (
+            jsonify(
+                {"status": 500, "message": "An error occurred while deleting the user"}
+            ),
+            500,
+        )
 
 
 # get log_user - lay thong tin hoat dong cua user
