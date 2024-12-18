@@ -209,7 +209,7 @@ const ReadManga = () => {
     if (datauser?.id_user && namePath) {
       const timer = setTimeout(() => {
         fetchSaveHistoryRead();
-      }, 180000);
+      }, 1800);
       return () => clearTimeout(timer);
     }
   }, [datauser, namePath, chapterId]);

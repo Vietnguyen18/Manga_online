@@ -174,3 +174,8 @@ app.add_url_rule(
     methods=["GET"],
     view_func=list_chapter_by_id,
 )
+
+# filter manga advanced
+app.add_url_rule(
+    "/manga/filter_manga_advance/<int:index>", methods=["POST"], view_func=filterManga
+)

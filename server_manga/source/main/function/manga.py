@@ -22,7 +22,7 @@ from flask_jwt_extended import (
     set_refresh_cookies,
     get_jwt_identity,
 )
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 import math
 import re
 from source.main.function.middleware import *
@@ -1215,13 +1215,96 @@ def filterManga(index):
     try:
         server = get_id_server(index)
         data = request.form
-        categories = data["categories"]
-        chapter_filter = data["chapter_filter"]
-        status_filter = data["status_filter"]
-        arrange_filter = data["arrange_filter"]
+        categories = data.get("categories", [])
+        status_filter = data.get("status_filter")
+        arrange_filter = data.get("arrange_filter")
+        chapter_filter = data.get("chapter_filter")
+        page = int(request.args.get("page", default=1))
 
-        query_base = List_Manga.query.filter_by(id_server=server)
+        query = (
+            db.session.query(List_Manga, Manga_Update)
+            .join(Manga_Update, Manga_Update.id_manga == List_Manga.id_manga)
+            .filter(List_Manga.id_server == server)
+        )
+
+        chapter_number = (
+            db.session.query(
+                List_Manga.id_manga,
+                (
+                    func.length(List_Manga.chapters)
+                    - func.length(func.replace(List_Manga.chapters, ",", ""))
+                    + 1
+                ).label("chapter_count"),
+            )
+            .filter(List_Manga.id_server == server)
+            .all()
+        )
+
+        chapter_count_map = {
+            item.id_manga: item.chapter_count for item in chapter_number
+        }
+
+        if categories:
+            category_filter = [category.strip() for category in categories]
+            query = query.filter(
+                List_Manga.categories.like("%" + "%".join(category_filter) + "%")
+            )
+
+        if status_filter:
+            query = query.filter(List_Manga.status == status_filter)
+
+        if arrange_filter:
+            if arrange_filter == "Posting date gradually decreases":
+                query = query.order_by(Manga_Update.time_release.desc())
+            elif arrange_filter == "Posting date gradually increases":
+                query = query.order_by(Manga_Update.time_release.asc())
+            elif arrange_filter == "Views gradually increase":
+                query = query.order_by(List_Manga.views_original.asc())
+            else:
+                query = query.order_by(List_Manga.views_original.desc())
+
+        if chapter_filter:
+            try:
+                chapter_filter = int(chapter_filter)
+                query = query.filter(
+                    List_Manga.id_manga.in_(
+                        [
+                            manga_id
+                            for manga_id, count in chapter_count_map.items()
+                            if count >= chapter_filter
+                        ]
+                    )
+                )
+            except ValueError:
+                return (
+                    jsonify({"errMsg": "Invalid chapter filter", "errCode": "400"}),
+                    400,
+                )
+
+        totalPage = 0
+        limit = 40
+        totalPage = math.ceil(query.count() / limit)
+        offset = (page - 1) * limit
+        results = query.limit(limit).offset(offset).all()
+
+        mangas = [
+            {
+                "manga_id": row.List_Manga.path_segment_manga,
+                "title": row.List_Manga.title_manga,
+                "categories": row.List_Manga.categories,
+                "status": row.List_Manga.status,
+                "views_original": row.List_Manga.views_original,
+                "time_release": row.Manga_Update.time_release,
+                "namePath": make_title(
+                    row.List_Manga.title_manga, row.List_Manga.path_segment_manga
+                ),
+                "poster": row.List_Manga.poster_original,
+            }
+            for row in results
+        ]
+
+        return jsonify({"data": mangas, "totalPage": totalPage, "status": 200}), 200
 
     except Exception as e:
-        print(e)
+        print(f"Error occurred: {e}")
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500

@@ -356,3 +356,12 @@ export const FetchForgotPassword = async (formdata) => {
   const response = await instance.patch(`/forgot_password`, formdata);
   return response.data;
 };
+
+// api search manga advanced
+export const FilterMangaAdvanced = async (formdata, page) => {
+  const response = await instance.post(
+    `/manga/filter_manga_advance/1?page=${page}`,
+    formdata
+  );
+  return response.data;
+};
