@@ -1209,3 +1209,19 @@ def list_chapter_by_id(id_manga):
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
+
+
+def filterManga(index):
+    try:
+        server = get_id_server(index)
+        data = request.form
+        categories = data["categories"]
+        chapter_filter = data["chapter_filter"]
+        status_filter = data["status_filter"]
+        arrange_filter = data["arrange_filter"]
+
+        query_base = List_Manga.query.filter_by(id_server=server)
+
+    except Exception as e:
+        print(e)
+        return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500

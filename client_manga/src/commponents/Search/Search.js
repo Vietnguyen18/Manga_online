@@ -10,7 +10,6 @@ import { number_chapter, sort, status_manga } from "../../constants/extend";
 const Search = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [chapterFilter, setChapterFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [arrangeFilter, setArrangeFilter] = useState("");
   const [showSearch, setShowSearch] = useState(true);
@@ -37,7 +36,6 @@ const Search = () => {
   const handleSearch = () => {
     const searchParams = {
       categories: selectedCategories,
-      chapter: chapterFilter,
       status: statusFilter,
       arrange: arrangeFilter,
     };
@@ -97,7 +95,6 @@ const Search = () => {
                     className="btn"
                     onClick={() => {
                       setSelectedCategories([]);
-                      setChapterFilter("");
                       setStatusFilter("");
                       setArrangeFilter("");
                     }}
@@ -129,23 +126,6 @@ const Search = () => {
                   </div>
                 </div>
                 <div className="sort_manga">
-                  <div className="filter_manga">
-                    <div className="label_search">Chapter number</div>
-                    <div className="value_search">
-                      <select
-                        className="box_value"
-                        value={chapterFilter}
-                        onChange={(e) => setChapterFilter(e.target.value)}
-                      >
-                        <option value="">Select</option>
-                        {number_chapter.map((chapter) => (
-                          <option key={chapter.id} value={chapter.value}>
-                            {chapter.value}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
                   <div className="filter_manga">
                     <div className="label_search">Status</div>
                     <div className="value_search">

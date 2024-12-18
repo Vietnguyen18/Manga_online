@@ -44,29 +44,6 @@ export const list_label_info = [
   },
 ];
 
-export const number_chapter = [
-  {
-    id: 1,
-    value: ">=50",
-  },
-  {
-    id: 2,
-    value: ">=100",
-  },
-  {
-    id: 3,
-    value: ">=200",
-  },
-  {
-    id: 4,
-    value: ">=300",
-  },
-  {
-    id: 5,
-    value: ">=400",
-  },
-];
-
 export const status_manga = [
   {
     id: 1,
