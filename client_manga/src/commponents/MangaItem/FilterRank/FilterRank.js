@@ -10,6 +10,7 @@ import {
   ListRankWeek,
   ListRankYear,
 } from "../../../services/api";
+import { formatText, formatViews, makeLink } from "../../../utils/extend";
 
 const FilterRank = () => {
   const { rank, page } = useParams();
@@ -26,11 +27,11 @@ const FilterRank = () => {
       try {
         let response;
 
-        if (rank === "Top Tuần") {
+        if (rank === "top-week") {
           response = await ListRankWeek(currentPage);
-        } else if (rank === "Top Tháng") {
+        } else if (rank === "top-month") {
           response = await ListRankMonth(currentPage);
-        } else if (rank === "Top Năm") {
+        } else if (rank === "top-year") {
           response = await ListRankYear(currentPage);
         } else {
           response = await ListCommingSoon(currentPage);
@@ -45,20 +46,12 @@ const FilterRank = () => {
 
     fetchListData();
   }, [rank, currentPage]);
-
-  const formatViews = (views) => {
-    if (views < 1000) {
-      return views;
-    } else if (views < 1000000) {
-      return (views / 1000).toFixed(1) + "K";
-    } else if (views < 1000000000) {
-      return (views / 1000000).toFixed(1) + "M";
-    } else {
-      return (views / 1000000000).toFixed(1) + "B";
-    }
-  };
   const handlePaginationChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleNavigate = (name_path) => {
+    navigate(`/truyen-tranh/${name_path}`);
   };
 
   return (
@@ -71,7 +64,7 @@ const FilterRank = () => {
                 <i className="icon_flag">
                   <FaFlag />
                 </i>
-                Truyện {rank}
+                {formatText(rank)} comics
               </span>
             </h2>
             <div className="manga_suggest">
@@ -79,9 +72,16 @@ const FilterRank = () => {
                 {dataList.length >= 0 &&
                   dataList.map((item, index) => (
                     <>
-                      <li className="grid-item">
+                      <li
+                        className="grid-item"
+                        key={item.id_manga}
+                        onClick={() => handleNavigate(item.name_path)}
+                      >
                         <div className="book_avatar">
-                          <a href={item.title_manga} title={item.title_manga}>
+                          <a
+                            href={makeLink("truyen-tranh", item.name_path)}
+                            title={item.title_manga}
+                          >
                             <img
                               src={item.image_poster_link_goc}
                               alt={item.title_manga}
@@ -92,7 +92,7 @@ const FilterRank = () => {
                           <div className="book_name">
                             <h3 itemProp="name">
                               <a
-                                href={item.title_manga}
+                                href={makeLink("truyen-tranh", item.name_path)}
                                 title={item.title_manga}
                               >
                                 {item.title_manga.length > 30

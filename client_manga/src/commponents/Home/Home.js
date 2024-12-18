@@ -6,10 +6,11 @@ import { ListAllMangaNew, ListRecommendedComics } from "../../services/api";
 import imageError from "../../assets/image_error.png";
 import { useNavigate } from "react-router-dom";
 import { IoMdCloudDownload } from "react-icons/io";
+import { makeLink } from "../../utils/extend";
+import Loading from "../Loading/Loading";
 const Home = () => {
   const navigate = useNavigate();
   const [listDataNew, setListDataNew] = useState([]);
-  console.log("data", listDataNew);
 
   const [listDataRecommend, setListDataRecommend] = useState([]);
   // random page
@@ -19,20 +20,29 @@ const Home = () => {
   }, 3000000);
 
   useEffect(() => {
-    const fetchGetListMangaNew = async () => {
-      const req = await ListAllMangaNew(randomPage);
-      setListDataNew(req.data);
+    const fetchData = async () => {
+      try {
+        const [newMangaRes, recommendedRes] = await Promise.all([
+          ListAllMangaNew(randomPage),
+          ListRecommendedComics(randomPage),
+        ]);
+
+        if (newMangaRes) setListDataNew(newMangaRes.data);
+        if (recommendedRes) setListDataRecommend(recommendedRes.data);
+      } catch (error) {
+        console.log("Error fetching data", error);
+      }
     };
-    const fetchListRecommended = async () => {
-      const req = await ListRecommendedComics(randomPage);
-      setListDataRecommend(req.data);
-    };
-    fetchGetListMangaNew();
-    fetchListRecommended();
+
+    fetchData();
   }, []);
 
   const goToRecommendedPage = (page) => {
-    navigate(`/truyen-moi-cap-nhat/${page}`); // Điều hướng đến trang Recommended với page là 2
+    navigate(`/truyen-moi-cap-nhat/${page}`);
+  };
+
+  const handleNavigate = (name_path) => {
+    navigate(`/truyen-tranh/${name_path}`);
   };
 
   return (
@@ -45,7 +55,7 @@ const Home = () => {
               <i className="icon_new">
                 <CiStar />
               </i>
-              Truyện Mới
+              New comics
             </span>
           </h2>
           <div className="manga_suggest">
@@ -77,9 +87,16 @@ const Home = () => {
 
                   return (
                     <>
-                      <li className="grid-item" key={index}>
+                      <li
+                        className="grid-item"
+                        key={index}
+                        onClick={() => handleNavigate(e.name_path)}
+                      >
                         <div className="book_avatar">
-                          <a href={e.url_manga} title={e.title_manga}>
+                          <a
+                            href={makeLink("truyen-tranh", e.name_path)}
+                            title={e.title_manga}
+                          >
                             <img
                               src={e.image_poster_link_goc}
                               alt={e.title_manga}
@@ -93,7 +110,10 @@ const Home = () => {
                         <div className="book_info">
                           <div className="book_name">
                             <h3 itemProp="name">
-                              <a href={e.url_manga} title={e.title_manga}>
+                              <a
+                                href={makeLink("truyen-tranh", e.name_path)}
+                                title={e.title_manga}
+                              >
                                 {e.title_manga.length > 30
                                   ? `${e.title_manga.substring(0, 30)}...`
                                   : e.title_manga}
@@ -101,7 +121,10 @@ const Home = () => {
                             </h3>
                           </div>
                           <div className="chapter">
-                            <a href={e.url_manga} title={e.chapter_new}>
+                            <a
+                              href={makeLink("truyen-tranh", e.name_path)}
+                              title={e.chapter_new}
+                            >
                               {e.chapter_new}
                             </a>
                           </div>
@@ -122,7 +145,7 @@ const Home = () => {
               <i className="icon_recommende">
                 <IoMdCloudDownload />
               </i>
-              Truyện tranh mới phát hành
+              Newly released comic
             </span>
           </h2>
           <div className="manga_suggest">
@@ -154,9 +177,15 @@ const Home = () => {
 
                   return (
                     <>
-                      <li className="grid-item">
+                      <li
+                        className="grid-item"
+                        onClick={() => handleNavigate(e.name_path)}
+                      >
                         <div className="book_avatar">
-                          <a href={e.url_manga} title={e.title_manga}>
+                          <a
+                            href={makeLink("truyen-tranh", e.name_path)}
+                            title={e.title_manga}
+                          >
                             <img
                               src={e.image_poster_link_goc}
                               alt={e.title_manga}
@@ -170,7 +199,10 @@ const Home = () => {
                         <div className="book_info">
                           <div className="book_name">
                             <h3 itemProp="name">
-                              <a href={e.url_manga} title={e.title_manga}>
+                              <a
+                                href={makeLink("truyen-tranh", e.name_path)}
+                                title={e.title_manga}
+                              >
                                 {e.title_manga.length > 30
                                   ? `${e.title_manga.substring(0, 30)}...`
                                   : e.title_manga}
@@ -178,7 +210,10 @@ const Home = () => {
                             </h3>
                           </div>
                           <div className="chapter">
-                            <a href={e.url_manga} title={e.chapter_new}>
+                            <a
+                              href={makeLink("truyen-tranh", e.name_path)}
+                              title={e.chapter_new}
+                            >
                               {e.chapter_new}
                             </a>
                           </div>
@@ -199,7 +234,7 @@ const Home = () => {
             goToRecommendedPage(2);
           }}
         >
-          Xem thêm truyện khác
+          See more comics
         </span>
       </div>
     </Container>

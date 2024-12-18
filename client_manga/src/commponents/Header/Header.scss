@@ -3,6 +3,7 @@
   min-height: 30px;
   margin: 0 auto;
   padding: 10px;
+  user-select: none;
   .logo {
     display: flex;
     gap: 50px;
@@ -13,6 +14,8 @@
       font-size: 24px;
       border-radius: 15px;
       cursor: pointer;
+      user-select: none;
+
       color: #333;
     }
     .search {
@@ -23,6 +26,7 @@
       height: 40px;
       display: flex;
       align-items: center;
+
       input {
         width: 100%;
         height: 100%;
@@ -32,6 +36,7 @@
         color: #b0b3b8;
         padding-left: 10px;
       }
+
       .icon_btn_search {
         position: absolute;
         top: 0;
@@ -40,11 +45,88 @@
         font-size: 24px;
         color: #e5ecf5;
         cursor: pointer;
+        user-select: none;
       }
+
       .icon_btn_search:hover {
         color: #aeb1b4;
       }
+
+      .search_result {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: #fff;
+        width: 100%;
+        border-radius: 3px;
+        box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.15);
+        max-height: 400px;
+        z-index: 2;
+        overflow: auto;
+        visibility: hidden; /* Hide by default */
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        margin-top: 5px;
+
+        &.visible {
+          visibility: visible;
+          opacity: 1;
+        }
+        ul {
+          margin: 0;
+          padding: 0;
+          li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            a {
+              text-decoration: none;
+              color: #333;
+              cursor: pointer;
+              user-select: none;
+
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              .search_avatar {
+                flex: 1.5;
+                img {
+                  width: 100%;
+                  height: auto;
+                }
+              }
+              .search_info {
+                flex: 6;
+                p {
+                  padding: 5px;
+                  margin: 0;
+                  font-weight: 600;
+                  font-size: 14px;
+                  color: inherit;
+                  text-transform: capitalize;
+                  &.author {
+                    font-size: 13px;
+                    font-weight: 400;
+                    color: inherit;
+                  }
+                  &.rate {
+                    color: #999;
+                    font-weight: normal;
+                    font-size: 12px;
+                    text-transform: capitalize;
+                    max-width: 308px;
+                  }
+                }
+              }
+            }
+
+            &:hover {
+              background-color: #cacece;
+            }
+          }
+        }
+      }
     }
+
     .header-notification {
       margin: 0 20px;
     }

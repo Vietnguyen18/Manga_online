@@ -6,6 +6,7 @@ import { CiStar } from "react-icons/ci";
 import "./FilterCate.scss";
 import { FaFlag } from "react-icons/fa";
 import { Pagination } from "antd";
+import { formatRating, formatViews, makeLink } from "../../../utils/extend";
 
 const FilterCategory = () => {
   const { category, page } = useParams();
@@ -31,36 +32,12 @@ const FilterCategory = () => {
     fetchDataList();
   }, [category, currentPage]);
 
-  //   format views
-  const formatViews = (views) => {
-    if (views < 1000) {
-      return views;
-    } else if (views < 1000000) {
-      return (views / 1000).toFixed(1) + "K";
-    } else if (views < 1000000000) {
-      return (views / 1000000).toFixed(1) + "M";
-    } else {
-      return (views / 1000000000).toFixed(1) + "B";
-    }
-  };
-  // format rate
-  const formatRating = (rating) => {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    const stars = Array(fullStars).fill("★");
-    if (hasHalfStar) {
-      stars.push("☆");
-    }
-    const emptyStars = 5 - stars.length;
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push("☆");
-    }
-    return stars.join(" ");
-  };
-
   const handlePaginationChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleNavigate = (name_path) => {
+    navigate(`/truyen-tranh/${name_path}`);
   };
 
   return (
@@ -72,7 +49,7 @@ const FilterCategory = () => {
               <i className="icon_flag">
                 <FaFlag />
               </i>
-              Truyện {category}
+              {category} Comics
             </span>
           </h2>
           <div className="manga_suggest">
@@ -97,9 +74,16 @@ const FilterCategory = () => {
 
                 return (
                   <>
-                    <li className="grid-item" key={item.id_manga}>
+                    <li
+                      className="grid-item"
+                      key={item.id_manga}
+                      onClick={() => handleNavigate(item.name_path)}
+                    >
                       <div className="book_avatar">
-                        <a href={item.id_manga} title={item.title}>
+                        <a
+                          href={makeLink("truyen-tranh", item.name_path)}
+                          title={item.title}
+                        >
                           <img src={item.poster} alt={item.title} />
                         </a>
                       </div>
@@ -112,7 +96,10 @@ const FilterCategory = () => {
                       <div className="book_info">
                         <div className="book_name">
                           <h3 itemProp="name">
-                            <a href={item.id_manga} title={item.title}>
+                            <a
+                              href={makeLink("truyen-tranh", item.name_path)}
+                              title={item.title}
+                            >
                               {item.title.length > 30
                                 ? `${item.title.substring(0, 30)}...`
                                 : item.title}

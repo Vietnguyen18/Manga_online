@@ -2,18 +2,8 @@
   width: 100%;
   margin: 15px;
   .filter_category {
-    .text_List_hot {
-      color: #ff2853;
-      padding: 10px 0px;
-      .icon_new {
-        display: inline-block;
-        font-size: inherit;
-        text-rendering: auto;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-    }
     .line_text_category {
+      text-transform: capitalize;
       color: #3f94d5;
       padding: 10px 0;
       font-size: 24px;

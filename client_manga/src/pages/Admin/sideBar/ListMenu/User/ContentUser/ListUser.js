@@ -6,8 +6,14 @@ import { DeleteUser, fetchAccount } from "../../../../../../services/api";
 import { HiDotsVertical } from "react-icons/hi";
 import ModalEdit from "./ModalEdit";
 import ModalCreateUser from "./ModalCreateUser";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import Swal from "sweetalert2";
+import { doLogoutAction } from "../../../../../../redux/account/accountSlice";
 
 const ListUser = ({ search }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [currentPage, setCurrentPage] = useState(1);
   const [isTotalPage, setIsTotalPage] = useState(0);
   const [listUsers, setListUsers] = useState([]);
@@ -20,7 +26,7 @@ const ListUser = ({ search }) => {
   const [editedUser, setEditedUser] = useState({
     name_user: "",
     email: "",
-    role: "Member",
+    role: "",
   });
 
   useEffect(() => {
@@ -46,11 +52,12 @@ const ListUser = ({ search }) => {
   const handelShowModal = (id_user) => {
     setIsShowModelEdit(true);
     const userToEdit = listUsers.find((user) => user.id_user === id_user);
+
     setIdUser(userToEdit.id_user);
     setEditedUser({
       name_user: userToEdit.name_user,
       email: userToEdit.email,
-      role: userToEdit.role === "true" ? "Admin" : "Member",
+      role: userToEdit.role === true ? "Admin" : "Member",
     });
   };
   const handleSubmit = () => {
@@ -65,19 +72,33 @@ const ListUser = ({ search }) => {
   };
 
   const handleDeleteUser = async (id_user) => {
-    try {
-      const response = await DeleteUser(id_user);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will not be able to recover user!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (rs) => {
+      if (rs.isConfirmed) {
+        try {
+          const response = await DeleteUser(id_user);
 
-      if (response.status === 200) {
-        fetchListUsers(currentPage);
-        message.success(response.message);
-      } else {
-        message.error(response.message);
+          if (response.status === 200) {
+            fetchListUsers(currentPage);
+            message.success(response.message);
+          } else {
+            message.error(response.message);
+          }
+        } catch (error) {
+          message.error(
+            "There was an error deleting the user. Please try again."
+          );
+          console.error(error);
+        }
       }
-    } catch (error) {
-      message.error("There was an error deleting the user. Please try again.");
-      console.error(error);
-    }
+    });
   };
 
   const handelCreateUser = () => {
@@ -126,7 +147,14 @@ const ListUser = ({ search }) => {
                     </td>
                     <td>{e.name_user}</td>
                     <td>{e.email}</td>
-                    <td>{role}</td>
+                    <td
+                      style={{
+                        color: role === "Admin" ? "#eb1717" : "inherit",
+                        fontWeight: role === "Admin" ? "600" : "normal",
+                      }}
+                    >
+                      {role}
+                    </td>
                     <td>{e.participation_time}</td>
                     <td>
                       <i

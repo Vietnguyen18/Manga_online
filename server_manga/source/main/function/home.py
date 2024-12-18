@@ -159,6 +159,11 @@ def new_release_comics(index, type):
                 "url_chapter": url_chapter,
                 "time_release": data.Manga_Update.time_release,
                 "views": data.Manga_Update.views,
+                "id_manga": data.List_Manga.path_segment_manga,
+                "name_path": make_title(
+                    data.Manga_Update.title_manga,
+                    data.Manga_Update.path_segment_manga,
+                ),
             }
 
             if r18_server_status() == "off":
@@ -217,6 +222,10 @@ def recent_comics(index, type):
                 ),
                 "time_release": recent_comic.Manga_Update.time_release,
                 "path_segment_manga": recent_comic.Manga_Update.path_segment_manga,
+                "name_path": make_title(
+                    recent_comic.Manga_Update.title_manga,
+                    recent_comic.Manga_Update.path_segment_manga,
+                ),
             }
 
             if r18_server_status() == "off":
@@ -284,7 +293,11 @@ def recommended_comics(index, type):
                     f"/r{type}/{manga.Manga_Update.path_segment_manga}/{manga.Manga_Update.path_segment_chapter}",
                 ),
                 "time_release": manga.Manga_Update.time_release,
-                "path_segment_manga": manga.Manga_Update.path_segment_manga,
+                "id_manga": manga.Manga_Update.path_segment_manga,
+                "name_path": make_title(
+                    manga.Manga_Update.title_manga,
+                    manga.Manga_Update.path_segment_manga,
+                ),
             }
 
             if r18_server_status() == "off":
@@ -334,6 +347,7 @@ def cooming_soon_comics(index, type):
             .filter(
                 (List_Server.index == index) & (Manga_Update.id_manga.like(f"%{type}%"))
             )
+            .order_by(Manga_Update.views.asc())
             .limit(limit)
             .offset(offset)
             .all()
@@ -351,6 +365,12 @@ def cooming_soon_comics(index, type):
                     localhost,
                     f"/r{type}/{manga.Manga_Update.path_segment_manga}",
                 ),
+                "name_path": make_title(
+                    manga.Manga_Update.title_manga,
+                    manga.Manga_Update.path_segment_manga,
+                ),
+                "id_manga": manga.Manga_Update.path_segment_manga,
+                "views": manga.Manga_Update.views,
             }
 
             if r18_server_status() == "off":
@@ -421,7 +441,11 @@ def rank_manga_week(index, type):
                 "image_poster_link_goc": rank.Manga_Update.poster,
                 "categories": rank.List_Manga.categories,
                 "views": rank.Manga_Update.views,
-                "path_segment_manga": rank.Manga_Update.path_segment_manga,
+                "name_path": make_title(
+                    rank.Manga_Update.title_manga,
+                    rank.Manga_Update.path_segment_manga,
+                ),
+                "id_manga": rank.Manga_Update.path_segment_manga,
             }
 
             if r18_server_status() == "off":
@@ -492,7 +516,11 @@ def rank_manga_month(index, type):
                 "image_poster_link_goc": rank.Manga_Update.poster,
                 "categories": rank.List_Manga.categories,
                 "views": rank.Manga_Update.views,
-                "path_segment_manga": rank.Manga_Update.path_segment_manga,
+                "name_path": make_title(
+                    rank.Manga_Update.title_manga,
+                    rank.Manga_Update.path_segment_manga,
+                ),
+                "id_manga": rank.Manga_Update.path_segment_manga,
             }
 
             if r18_server_status() == "off":
@@ -563,7 +591,11 @@ def rank_manga_year(index, type):
                 "image_poster_link_goc": rank.Manga_Update.poster,
                 "categories": rank.List_Manga.categories,
                 "views": rank.Manga_Update.views,
-                "path_segment_manga": rank.Manga_Update.path_segment_manga,
+                "name_path": make_title(
+                    rank.Manga_Update.title_manga,
+                    rank.Manga_Update.path_segment_manga,
+                ),
+                "id_manga": rank.Manga_Update.path_segment_manga,
             }
 
             if r18_server_status() == "off":

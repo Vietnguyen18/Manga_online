@@ -1,84 +1,138 @@
 .main_content {
-  width: 100%;
-  margin: 15px;
+  margin-top: 20px;
+
   .history_suggest {
-    .line_history {
-      color: #3f94d5;
-      padding: 10px 0;
-      font-size: 24px;
-      .icon_flag {
-        display: inline-block;
-        font-size: 24px;
-        padding-right: 5px;
-        text-rendering: auto;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-    }
-    .manga_suggest {
-      width: 100%;
-      overflow: hidden;
-      min-height: 268px;
+    h2 {
       display: flex;
-      flex-wrap: nowrap;
-      gap: 15px;
-      justify-content: center;
-      text-align: center;
-      padding: 10px;
-      a {
-        text-decoration: none;
-        padding: 5px;
-        color: #333;
-        overflow: hidden;
-        cursor: pointer;
-        font-size: 16px;
-      }
-      .grid-container {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 20px;
-        padding: 10px;
-        .grid-item {
-          background-color: #fff;
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-          overflow: hidden;
-          position: relative;
-        }
-      }
-      .book_avatar {
-        width: 100%;
-        height: 220px;
-        overflow: hidden;
-        border-radius: 6px;
+      align-items: center;
+      font-size: 1.5rem;
+      color: #333;
+
+      .line_history {
         display: flex;
         align-items: center;
-        img {
-          width: 100%;
-          height: auto;
-          vertical-align: middle;
-          display: flex;
-          border: 1px solid #ccc;
+
+        .icon_flag {
+          margin-right: 10px;
+          color: #ffcc00;
         }
       }
-      .notification {
-        width: 100%;
-        height: 50px;
-        background-color: #404142;
-        color: #fff;
-        border-radius: 10px;
-        box-shadow: 0 2px 3px rgb(10 10 10 / 10%), 0 0 0 1px rgb(10 10 10 / 10%);
-        padding: 1.25rem;
+    }
+
+    .manga_suggest {
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 10px;
+        margin-top: 20px;
+        list-style: none;
+        padding: 0;
+
+        .grid-item {
+          background-color: #f5f5f5;
+          border-radius: 10px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+          position: relative;
+
+          .book_avatar {
+            position: relative;
+
+            img {
+              width: 100%;
+              height: 250px;
+              object-fit: cover;
+            }
+
+            .remove-icon {
+              position: absolute;
+              top: 10px;
+              right: 10px;
+              background-color: #fff;
+              border: 1px solid #ddd;
+              border-radius: 50%;
+              width: 24px;
+              height: 24px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              font-size: 14px;
+              font-weight: bold;
+              color: #000;
+              cursor: pointer;
+              transition: background-color 0.3s;
+
+              &:hover {
+                background-color: #ff4d4f;
+                color: #fff;
+              }
+            }
+
+            .read-time {
+              position: absolute;
+              top: 10px;
+              left: 10px;
+              background-color: #2fa3f7;
+              color: #fff;
+              padding: 5px 10px;
+              border-radius: 5px;
+              font-size: 12px;
+              font-weight: bold;
+            }
+          }
+
+          .book_info {
+            padding: 10px;
+            text-align: center;
+
+            .book_name {
+              h3 {
+                margin: 0;
+                font-size: 1rem;
+
+                a {
+                  color: #333;
+                  text-decoration: none;
+
+                  &:hover {
+                    color: #2fa3f7;
+                  }
+                }
+              }
+            }
+
+            .infor_manga {
+              margin-top: 5px;
+              display: flex;
+              justify-content: space-between;
+              font-size: 0.9rem;
+              color: #777;
+
+              .chapter {
+                font-weight: bold;
+                color: #333;
+              }
+
+              .type {
+                color: #999;
+              }
+
+              .time {
+                color: #2fa3f7;
+                font-weight: bold;
+              }
+            }
+          }
+        }
+      }
+
+      .notification,
+      .notifi_data {
+        text-align: center;
+        font-size: 1.1rem;
+        color: #888;
+        user-select: none;
       }
     }
   }
-}
-
-.pagination {
-  padding-top: 10px;
-  text-align: center !important;
-  margin-bottom: 30px;
-  padding: 12px 20px;
-  display: flex;
-  justify-content: center;
 }

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Login&Register.css";
-import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
+import { FaUser, FaLock, FaEnvelope, FaEye } from "react-icons/fa";
 import { callLogin, callRegister } from "../../services/api";
 import { message } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -10,6 +10,8 @@ import {
 } from "../../redux/account/accountSlice";
 import { useDispatch } from "react-redux";
 import localStorage from "redux-persist/lib/storage";
+import ForgotPassword from "./ModalFogot/ForgotPassword";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const LoginRegister = () => {
   const dispatch = useDispatch();
@@ -22,8 +24,9 @@ const LoginRegister = () => {
   });
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // Xác định hành động hiện tại là đăng nhập hay đăng ký
+  const [isShowPass, setIsShowPass] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [statusEye, setStatusEye] = useState(false);
   const action = location.pathname === "/login" ? "login" : "register";
 
   const handleChange = (e) => {
@@ -68,7 +71,7 @@ const LoginRegister = () => {
 
       if (response.status === 200) {
         message.success(response.message);
-        navigator("/login"); // Sau khi đăng ký thành công, chuyển hướng về trang login
+        navigator("/login");
       } else {
         message.error(
           response.message || "Registration failed. Please try again."
@@ -83,7 +86,14 @@ const LoginRegister = () => {
       setLoading(false);
     }
   };
+  const handleShowPass = () => {
+    setIsShowPass(!isShowPass);
+    setStatusEye(!statusEye);
+  };
 
+  const handleChangePassword = () => {
+    setShowModal(true);
+  };
   return (
     <div className="body-container">
       <div className={`wrapper ${action === "register" ? "active" : ""}`}>
@@ -105,24 +115,26 @@ const LoginRegister = () => {
               </div>
               <div className="input-box">
                 <input
-                  type="password"
+                  type={isShowPass ? "text" : "password"}
                   placeholder="Password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
                 />
-                <FaLock className="icon" />
+                {statusEye ? (
+                  <FiEye className="icon" onClick={handleShowPass} />
+                ) : (
+                  <FiEyeOff className="icon" onClick={handleShowPass} />
+                )}
               </div>
 
               {errorMessage && <p className="error-message">{errorMessage}</p>}
 
               <div className="remember-forgot">
-                <label>
-                  <input type="checkbox" />
-                  Remember me
-                </label>
-                <a href="forgot-password">Forgot password?</a>
+                <a href="#" onClick={handleChangePassword}>
+                  Forgot password?
+                </a>
               </div>
               <button type="submit" disabled={loading}>
                 {loading ? "Logging in..." : "Login"}
@@ -196,6 +208,10 @@ const LoginRegister = () => {
           </div>
         )}
       </div>
+      {/* form forgot */}
+      {showModal && (
+        <ForgotPassword show={showModal} setShowModal={setShowModal} />
+      )}
     </div>
   );
 };

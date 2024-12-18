@@ -3,7 +3,13 @@ import "./HistoryRead.scss";
 import { Container } from "react-bootstrap";
 import { FaFlag } from "react-icons/fa";
 import { message } from "antd";
-import { ListHistoryRead } from "../../services/api";
+import { DeleteHistoryRead, ListHistoryRead } from "../../services/api";
+import {
+  changeidManga,
+  formatTimeDifference,
+  makeLink,
+  makeLinkChapter,
+} from "../../utils/extend";
 
 const HistoryRead = () => {
   const [dataList, setDataList] = useState([]);
@@ -14,7 +20,7 @@ const HistoryRead = () => {
     const fetchHistoryRead = async () => {
       try {
         const response = await ListHistoryRead(id_user);
-        setDataList(response.data);
+        setDataList(response.list_all_history);
       } catch (er) {
         message.error("Failed to fetch history. Please try again later.");
       }
@@ -23,6 +29,40 @@ const HistoryRead = () => {
       fetchHistoryRead();
     }
   }, [id_user]);
+
+  const handleRemoveItem = async (id) => {
+    try {
+      const itemToRemove = dataList.find((item) => item.id_manga === id);
+      console.log(itemToRemove);
+
+      if (!itemToRemove) {
+        console.error("Item not found");
+        message.error("Item not found.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("id_manga", itemToRemove.id_manga);
+      formData.append("id_chapter", itemToRemove.chapter);
+
+      if (id_user) {
+        const response = await DeleteHistoryRead(id_user, formData);
+        console.log(response);
+
+        if (response.status === 200) {
+          const updatedList = dataList.filter((item) => item.id_manga !== id);
+          setDataList(updatedList);
+          message.success(response.message);
+        } else {
+          console.error("Failed to delete history:", response.message);
+          message.error("Failed to delete history.");
+        }
+      }
+    } catch (er) {
+      console.error("Error: ", er);
+      message.error("Failed to delete history.");
+    }
+  };
 
   return (
     <Container>
@@ -33,7 +73,7 @@ const HistoryRead = () => {
               <i className="icon_flag">
                 <FaFlag />
               </i>
-              Lịch Sử
+              History
             </span>
           </h2>
           <div className="manga_suggest">
@@ -43,14 +83,37 @@ const HistoryRead = () => {
                   {dataList.map((item) => (
                     <li className="grid-item" key={item.id_manga}>
                       <div className="book_avatar">
-                        <a href={item.link_manga} title={item.title_manga}>
+                        <a
+                          href={makeLinkChapter(
+                            "truyen-tranh",
+                            item.namePath,
+                            item.chapter
+                          )}
+                          title={item.title_manga}
+                        >
                           <img src={item.poster} alt={item.title_manga} />
                         </a>
+                        <span
+                          className="remove-icon"
+                          onClick={() => handleRemoveItem(item.id_manga)}
+                        >
+                          &times;
+                        </span>
+                        <span className="read-time">
+                          {formatTimeDifference(item.readAt)}
+                        </span>
                       </div>
                       <div className="book_info">
                         <div className="book_name">
                           <h3 itemProp="name">
-                            <a href={item.link_manga} title={item.title_manga}>
+                            <a
+                              href={makeLinkChapter(
+                                "truyen-tranh",
+                                item.namePath,
+                                item.chapter
+                              )}
+                              title={item.title_manga}
+                            >
                               {item.title_manga
                                 ? `${item.title_manga.substring(0, 30)}${
                                     item.title_manga.length > 30 ? "..." : ""
@@ -62,18 +125,17 @@ const HistoryRead = () => {
                         <div className="infor_manga">
                           <p className="chapter">{item.chapter}</p>
                           <p className="type">{item.type}</p>
-                          <p className="time">{item.readAt}</p>
                         </div>
                       </div>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p>Không có dữ liệu để hiển thị</p>
+                <p className="notifi_data">There is no data to display</p>
               )
             ) : (
               <div className="notification">
-                Bạn cần đăng nhập để xem được mục này
+                You need to log in to view this item
               </div>
             )}
           </div>

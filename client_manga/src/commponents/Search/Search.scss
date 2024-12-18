@@ -1,0 +1,116 @@
+.main_content {
+  .home_page {
+    .text_heading {
+      text-transform: capitalize;
+      color: #3f94d5;
+      padding: 10px 0;
+      font-size: 24px;
+      .icon_flag {
+        display: inline-block;
+        font-size: 24px;
+        padding-right: 5px;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    }
+  }
+  .box_search {
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 3px rgb(10 10 10 / 10%), 0 0 0 1px rgb(10 10 10 / 10%);
+    color: #4a4a4a;
+    display: block;
+    padding: 1.25rem;
+    .hidden_action {
+      margin: 5px;
+      .btn {
+        display: block;
+        margin: 0 auto;
+        background-color: #3f94d5;
+      }
+    }
+    .advsearch_form {
+      padding: 5px;
+      .instruct {
+        margin-bottom: 10px;
+        p {
+          display: flex;
+          margin: 0;
+          gap: 5px;
+          align-items: center;
+          .icon {
+            border: 1px solid #333;
+            color: #ff0000;
+          }
+        }
+      }
+      .action_reset {
+        margin: 5px;
+        .btn {
+          display: block;
+          margin: 0 auto;
+          background-color: #3f94d5;
+        }
+      }
+      .list_categories {
+        width: 100%;
+        height: auto;
+        padding: 10px;
+        .categories_items {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          grid-gap: 5px;
+          border-radius: 4px;
+          margin: 0 20px 20px 20px;
+          .check_box {
+            cursor: pointer;
+          }
+          .name_category {
+            padding-left: 10px;
+          }
+        }
+      }
+      .sort_manga {
+        display: grid;
+        grid-template-columns: 2fr 2fr;
+        gap: 10px;
+        margin-top: 20px;
+        padding: 0;
+        list-style: none;
+        align-items: center;
+        .filter_manga {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          flex-direction: column;
+          align-items: stretch;
+          .label_search {
+            font-weight: bold;
+            font-size: 16px;
+          }
+
+          .value_search {
+            flex-grow: 1;
+
+            .box_value {
+              width: 300px;
+              padding: 10px;
+              border-radius: 10px;
+              border: 1px solid #333;
+              font-size: 16px;
+            }
+          }
+        }
+      }
+      .action_submit {
+        margin-top: 20px;
+        .btn {
+          display: block;
+          margin: 0 auto;
+          background-color: #3f94d5;
+        }
+      }
+    }
+  }
+}

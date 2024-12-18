@@ -14,4 +14,4 @@ class LogUser(db.Model):
     poster = db.Column(db.Text)
     type = db.Column(db.Text)
     index = db.Column(db.Integer)
-    read_time = db.Column(db.DateTime, default=db.func.current_timestamp())
+    read_time = db.Column(db.Text)

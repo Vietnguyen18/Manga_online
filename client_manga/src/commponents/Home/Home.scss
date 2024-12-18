@@ -6,6 +6,7 @@
     .text_List_hot {
       color: #ff2853;
       padding: 10px 0px;
+      text-transform: capitalize;
       .icon_new {
         display: inline-block;
         font-size: inherit;
@@ -17,6 +18,8 @@
     .text_List_recommended {
       color: #3f94d5;
       padding: 10px 0px;
+      text-transform: capitalize;
+
       .icon_recommende {
         display: inline-block;
         font-size: inherit;
@@ -102,6 +105,7 @@
   padding-top: 10px;
   text-align: center !important;
   margin-bottom: 30px;
+  cursor: pointer;
   span {
     border-radius: 5px;
     box-shadow: 0 0 3px 0 rgb(0 0 0 / 25%);

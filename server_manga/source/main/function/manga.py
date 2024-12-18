@@ -269,54 +269,73 @@ def filter_manga(index):
 def get_listManga(path):
     try:
         print("___path___" + str(path))
-        manga = List_Manga.query.filter_by(path_segment_manga=path).first()
-        if manga is None:
+        manga = List_Manga.query.filter(
+            List_Manga.path_segment_manga.ilike(f"%{path}%")
+        ).first()
+        print("poster", manga.poster_original)
+
+        if manga:
+            update_manga = Manga_Update.query.filter_by(id_manga=manga.id_manga).first()
+            localhost = split_join(request.url)
+            chapters = list_chapter(localhost, manga.id_manga, path, "manga")
+            print("-------------", chapters)
+            if isinstance(chapters, list):
+                print("_____________PRINT__chapters___", chapters)
+            else:
+                raise ValueError(
+                    "Expected chapters to be a list, but got something else"
+                )
+
+            id_manga = manga.path_segment_manga
+            manga_info = {
+                "genres": "manga",
+                "id_manga": id_manga,
+                "title": manga.title_manga,
+                "description": manga.descript_manga,
+                "poster": manga.poster_original,
+                "categories": manga.categories,
+                "rate": manga.rate,
+                "views": manga.views_original,
+                "status": manga.status,
+                "author": manga.author,
+                "chapters": chapters,
+                "time_release": format_date(update_manga.time_release),
+                "name_path": make_title(manga.title_manga, id_manga),
+            }
+            all_review = Reviews_Manga.query.all()
+            review_of_manga = None
+            for review in all_review:
+                if (
+                    convert_title_manga(review.link_manga).lower()
+                    == str(manga.title_manga).lower()
+                ):
+                    review_of_manga = Reviews_Manga.query.filter(
+                        Reviews_Manga.idReview == review.idReview
+                    ).first()
+                    break
+            if review_of_manga is None:
+                review_info = {"Err": "don't have review"}
+            else:
+                review_info = {
+                    "link_user": review_of_manga.link_user,
+                    "link_avatar_user": review_of_manga.link_avatar_user_comment,
+                    "link_manga": review_of_manga.link_manga,
+                    "noi_dung": review_of_manga.noi_dung,
+                    "time_release": review_of_manga.time_review,
+                }
+            return (
+                jsonify(
+                    {
+                        "status": 200,
+                        "manga_info": manga_info,
+                        "review_info": review_info,
+                    }
+                ),
+                200,
+            )
+        else:
             return jsonify(msg="Manga does not exist!"), 404
 
-        localhost = split_join(request.url)
-        chapters = list_chapter(localhost, manga.id_manga, path, "manga")
-        print("_____________PRINT__chapters___" + str(chapters))
-        manga_info = {
-            "genres": "manga",
-            "id_manga": manga.id_manga,
-            "title": manga.title_manga,
-            "description": manga.descript_manga,
-            "poster": manga.poster_original,
-            "categories": manga.categories,
-            "rate": manga.rate,
-            "views": manga.views_original,
-            "status": manga.status,
-            "author": manga.author,
-            "comments": get_comments(path),
-            "chapters": chapters,
-        }
-        all_review = Reviews_Manga.query.all()
-        review_of_manga = None
-        for review in all_review:
-            if (
-                convert_title_manga(review.link_manga).lower()
-                == str(manga.title_manga).lower()
-            ):
-                review_of_manga = Reviews_Manga.query.filter(
-                    Reviews_Manga.idReview == review.idReview
-                ).first()
-                break
-        if review_of_manga is None:
-            review_info = {"Err": "don't have review"}
-        else:
-            review_info = {
-                "link_user": review_of_manga.link_user,
-                "link_avatar_user": review_of_manga.link_avatar_user_comment,
-                "link_manga": review_of_manga.link_manga,
-                "noi_dung": review_of_manga.noi_dung,
-                "time_release": review_of_manga.time_review,
-            }
-        return (
-            jsonify(
-                {"status": 200, "manga_info": manga_info, "review_info": review_info}
-            ),
-            200,
-        )
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
@@ -325,7 +344,9 @@ def get_listManga(path):
 # get list novel by path
 def get_Listnovel(path):
     try:
-        novel = List_Manga.query.filter_by(path_segment_manga=path).first()
+        novel = List_Manga.query.filter(
+            List_Manga.path_segment_manga.ilike(f"%{path}%")
+        ).first()
         if novel is None:
             return jsonify(msg="Novel does not exist!"), 404
 
@@ -400,7 +421,7 @@ def edit_manga(path_segment_manga):
             manga.author = form.author.data
             db.session.commit()
         manga_update = {
-            "id_manga": form.path_segment_manga.data,
+            "id_manga": manga.path_segment_manga,
             "title_manga": form.title_manga.data,
             "poster_original": poster_original,
             "categories": form.categories.data,
@@ -424,7 +445,7 @@ def edit_manga(path_segment_manga):
 # delete manga
 def delete_manga(path_segment_manga, path_segment_chapter):
     path_segment = f"{path_segment_manga}-{path_segment_chapter}"
-    print(current_user)
+    print(path_segment)
     try:
         comments = Comments.query.filter_by(path_segment_manga=path_segment_manga).all()
 
@@ -437,7 +458,9 @@ def delete_manga(path_segment_manga, path_segment_chapter):
         List_Manga.query.filter(
             List_Manga.path_segment_manga == path_segment_manga
         ).delete()
-        Imaga_Chapter.query.filter_by(path_segment=path_segment).delete()
+        if path_segment and path_segment_chapter:
+            Imaga_Chapter.query.filter_by(path_segment=path_segment).delete()
+
         LogUser.query.filter_by(path_segment_manga=path_segment_manga).delete()
         Manga_Update.query.filter_by(path_segment_manga=path_segment_manga).delete()
         db.session.commit()
@@ -522,11 +545,16 @@ def get_content_chapter(path_segment_manga, path_segment_chapter):
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
 
 
+# get all comment manga
+def get_all_comment_manga(path):
+    return get_comments(path)
+
+
 # get comment chapter manga
 def get_comment_chapter(path_segment_manga, path_segment_chapter):
     try:
-        manga = List_Manga.query.filter_by(
-            path_segment_manga=path_segment_manga
+        manga = List_Manga.query.filter(
+            List_Manga.path_segment_manga.ilike(f"%{path_segment_manga}%")
         ).first()
         if manga is None:
             return jsonify({"status": 404, "message": " Manga Not Found"}), 404
@@ -542,9 +570,9 @@ def get_comment_chapter(path_segment_manga, path_segment_chapter):
 
         comments = (
             db.session.query(Comments)
-            .filter_by(
-                path_segment_manga=path_segment_manga,
-                path_segment_chapter=path_segment_chapter,
+            .filter(
+                Comments.path_segment_manga.ilike(f"%{path_segment_manga}"),
+                Comments.path_segment_chapter == path_segment_chapter,
             )
             .order_by(
                 func.STR_TO_DATE(Comments.time_comment, "%H:%i:%S %d-%m-%Y").desc()
@@ -571,13 +599,13 @@ def get_comment_chapter(path_segment_manga, path_segment_chapter):
                     "avatar_user": profile.avatar_user,
                     "id_comment": comment.id_comment,
                     "content": comment.content,
-                    "like_count": like_count,
-                    "time_comment": comment.time_comment,
+                    "likes": like_count,
+                    "time_comment": convert_time(comment.time_comment),
                     "is_edited_comment": comment.is_edited_comment,
-                    "replied_comment": [],
+                    "replies_content": [],
                 }
                 result.append(data)
-        print(result)
+
         for comment in comments:
             if comment.is_comment_reply == 1:
                 like_count = LikesComment.query.filter_by(
@@ -589,22 +617,26 @@ def get_comment_chapter(path_segment_manga, path_segment_chapter):
                     "name_user": profile.name_user,
                     "avatar_user": profile.avatar_user,
                     "id_comment": comment.id_comment,
-                    "like_count": like_count,
+                    "likes": like_count,
                     "content": comment.content,
-                    "time_comment": comment.time_comment,
+                    "time_comment": convert_time(comment.time_comment),
                     "is_edited_comment": comment.is_edited_comment,
                 }
-            for data in result:
-                if data["id_comment"] == comment.reply_id_comment:
-                    data["replied_comment"].append(replied_comment)
+                for data in result:
+                    if data["id_comment"] == comment.reply_id_comment:
+                        data["replies_content"].append(replied_comment)
+                data["reply"] = len(data["replies_content"])
 
-        return jsonify(result), 200
+        return (
+            jsonify({"data": result, "status": 200}),
+            200,
+        )
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
 
 
-# create comment
+# create comment chapter
 def create_comment_chapter(path_segment_manga, path_segment_chapter):
     form = CommentsForm()
     current_user = get_jwt_identity()
@@ -612,8 +644,8 @@ def create_comment_chapter(path_segment_manga, path_segment_chapter):
     try:
         profile = Profiles.query.filter_by(id_user=id_user).first()
 
-        manga = List_Manga.query.filter_by(
-            path_segment_manga=path_segment_manga
+        manga = List_Manga.query.filter(
+            List_Manga.path_segment_manga.ilike(f"%{path_segment_manga}%")
         ).first()
         if manga is None:
             return jsonify({"message": "Manga not found"}), 404
@@ -664,7 +696,11 @@ def create_comment_chapter(path_segment_manga, path_segment_chapter):
             }
             return (
                 jsonify(
-                    {"data": responses, "message": "New comment added successfully"}
+                    {
+                        "data": responses,
+                        "message": "New comment added successfully",
+                        "status": 200,
+                    }
                 ),
                 200,
             )
@@ -686,8 +722,8 @@ def create_comment_manga(path_segment_manga):
     id_user = current_user.get("UserID")
     try:
         profile = Profiles.query.filter_by(id_user=id_user).first()
-        manga = List_Manga.query.filter_by(
-            path_segment_manga=path_segment_manga
+        manga = List_Manga.query.filter(
+            List_Manga.path_segment_manga.ilike(f"%{path_segment_manga}%")
         ).first()
         if manga is None:
             return jsonify({"message": "Manga not found"}), 404
@@ -700,7 +736,7 @@ def create_comment_manga(path_segment_manga):
             time = datetime.now().strftime("%H:%M:%S %d-%m-%Y")
             comment = Comments(
                 id_user=id_user,
-                path_segment_manga=path_segment_manga,
+                path_segment_manga=manga.path_segment_manga,
                 path_segment_chapter=path_segment_chapter,
                 content=content,
                 time_comment=time,
@@ -717,7 +753,13 @@ def create_comment_manga(path_segment_manga):
                 "content": content,
                 "time_comment": convert_time(time),
             }
-            return jsonify(responses=responses)
+            return jsonify(
+                {
+                    "data": responses,
+                    "message": "New comment added successfully",
+                    "status": 200,
+                }
+            )
         return jsonify(error=form.errors), 400
     except Exception as e:
         print(e)
@@ -773,7 +815,13 @@ def create_reply_comments(id_comment):
                 "is_comment_reply": True,
                 "reply_id_comment": id_comment,
             }
-            return jsonify(responses=responses)
+            return jsonify(
+                {
+                    "data": responses,
+                    "message": "New replies comment added successfully",
+                    "status": 200,
+                }
+            )
         return jsonify(error=form.errors), 400
     except Exception as e:
         print(e)
@@ -806,7 +854,7 @@ def delete_comment(id_comment):
         delete_reply_comment(comment)
         db.session.delete(comment)
         db.session.commit()
-        return jsonify({"message": "Comment deleted successfully"}), 200
+        return jsonify({"message": "Comment deleted successfully", "status": 200}), 200
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
@@ -917,7 +965,7 @@ def like_comment(id_user, id_comment):
             if like_status.status == "like":
                 like_status.status = "unlike"
                 db.session.commit()
-                return jsonify({"message": "Unliked Comment  successfully"}), 200
+                return jsonify({"message": "Unliked Comment successfully"}), 200
             else:
                 like_status.status = "like"
                 db.session.commit()
@@ -954,38 +1002,49 @@ def get_all_categories():
 
 
 # search manga
-def search_manga():
+def search_manga(index):
     try:
         key = request.args.get("search")
         limit = 10
+        result = db.session.query(List_Manga, Manga_Update)
+        id_server = get_id_server(index)
         if key:
-            result = (
-                db.session.query(List_Manga, Manga_Update)
-                .join(Manga_Update)
-                .filter(List_Manga.title_manga.ilike(f"%{key}%"))
+            search_manga = or_(
+                List_Manga.title_manga.ilike(f"%{key}%"),
+                List_Manga.author.ilike(f"%{key}%"),
+                List_Manga.path_segment_manga.ilike(f"%{key}%"),
+            )
+            result = result.filter(search_manga, List_Manga.id_server == id_server)
+
+            list_manga = (
+                result.join(Manga_Update, List_Manga.id_manga == Manga_Update.id_manga)
                 .order_by(Manga_Update.time_release.desc())
                 .limit(limit)
                 .all()
             )
             manga_list = []
-            for manga in result:
-
+            for manga in list_manga:
+                id_manga = manga.List_Manga.path_segment_manga
+                title = manga.List_Manga.title_manga
                 data = {
-                    "id_manga": manga.List_Manga.id_manga,
-                    "title": manga.List_Manga.title_manga,
-                    "description": manga.List_Manga.descript_manga,
+                    "id_manga": id_manga,
+                    "title": title,
                     "poster": manga.List_Manga.poster_original,
-                    "categories": manga.List_Manga.categories,
-                    "rate": manga.List_Manga.rate,
-                    "views": manga.List_Manga.views_original,
-                    "status": manga.List_Manga.status,
-                    "time": manga.Manga_Update.time_release,
+                    "rate": manga.Manga_Update.rate,
                     "author": manga.List_Manga.author,
+                    "name_path": make_title(title, id_manga),
                 }
+                print("rate", manga.Manga_Update.rate)
                 manga_list.append(data)
-            if result is None:
+            if list_manga is None:
                 return jsonify({"message": "Manga does not exist!"}), 404
-            return jsonify(manga_list)
+            return jsonify({"data": manga_list, "status": 200})
+        else:
+            return (
+                jsonify({"data": [], "status": 200, "message": "Manga Not Found"}),
+                200,
+            )
+
     except Exception as e:
         print(e)
         return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
@@ -1033,12 +1092,9 @@ def list_manta_by_category(index):
                         manga.List_Manga.categories + manga.List_Manga.title_manga
                     ):
                         continue
-                path_segment_manga = manga.List_Manga.path_segment_manga
-                link_manga = make_link(
-                    localhost, f"/{index}/rmanga/{path_segment_manga}"
-                )
+                id_manga = manga.List_Manga.path_segment_manga
                 data = {
-                    "id_manga": link_manga,
+                    "id_manga": id_manga,
                     "title": manga.List_Manga.title_manga,
                     "description": manga.List_Manga.descript_manga,
                     "poster": manga.List_Manga.poster_original,
@@ -1049,6 +1105,7 @@ def list_manta_by_category(index):
                     "time": manga.Manga_Update.time_release,
                     "author": manga.List_Manga.author,
                     "id_server": manga.List_Manga.id_server,
+                    "name_path": make_title(manga.List_Manga.title_manga, id_manga),
                 }
                 result.append(data)
 
@@ -1081,6 +1138,60 @@ def views_manga():
 
 # list all chapter manga by id manga
 def list_all_chapter(id_manga):
+    try:
+        chapters = List_Chapter.query.filter(
+            List_Chapter.id_manga.like(f"%{id_manga}%")
+        ).all()
+        data = []
+        for item in chapters:
+            data.append(
+                {
+                    "id_manga": shorten_id(item.id_manga),
+                    "path_segment_chapter": item.path_segment_chapter,
+                    "id_chapter": item.id_chapter,
+                }
+            )
+        return jsonify({"data": data, "status": 200}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
+
+
+def list_all_chapter(id_manga):
+    try:
+        chapters = List_Chapter.query.filter(
+            List_Chapter.id_manga.like(f"%{id_manga}%")
+        ).all()
+
+        ListChapters = []
+        chapterNameNumber = 0
+        for query in chapters:
+            path_segment_chapter = query.path_segment_chapter
+            match = re.search(r"chapter-(\d+)", path_segment_chapter)
+            if match:
+                chapter_number = int(match.group(1))
+            else:
+                continue
+            chapter_name = query.title_chapter.split("/")[-1]
+            if chapter_name == "":
+                chapter_name = query.title_chapter.split("/")[-2]
+            chapter_name = chapter_name.replace(".html", "")
+
+            chapter = {
+                "id_chapter": path_segment_chapter,
+                "chapter_number": chapter_number,
+            }
+            ListChapters.append(chapter)
+
+        ListChapters.sort(key=lambda x: x["chapter_number"])
+
+        return ListChapters
+    except Exception as e:
+        print(e)
+        return jsonify({"errMsg": "Internal Server Error", "errCode": str(e)}), 500
+
+
+def list_chapter_by_id(id_manga):
     try:
         chapters = List_Chapter.query.filter(
             List_Chapter.id_manga.like(f"%{id_manga}%")

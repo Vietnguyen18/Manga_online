@@ -28,6 +28,7 @@ const ModalEdit = ({
           )
         );
         message.success(response.message, 3);
+
         setShowModal(false);
       } else {
         message.error(response.errMsg);

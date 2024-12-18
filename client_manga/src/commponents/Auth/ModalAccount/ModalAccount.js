@@ -25,10 +25,10 @@ const ModalAccount = (props) => {
     >
       <div className="modal-auth-container">
         <Modal.Header closeButton>
-          <Modal.Title className="modal-auth-title">Thông Báo</Modal.Title>
+          <Modal.Title className="modal-auth-title">Notification</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Xin chao ban. Hãy đăng kí hoặc đăng nhập nếu bạn đã có tài khoản!
+          Hello, please register or log in if you already have an account!
         </Modal.Body>
         <Modal.Footer className="btn-auth">
           <Button
@@ -36,14 +36,14 @@ const ModalAccount = (props) => {
             variant="secondary"
             onClick={handleClickRegister}
           >
-            Đăng ký
+            Register
           </Button>
           <Button
             className="btn-login"
             variant="primary"
             onClick={handleClickLogin}
           >
-            Đăng nhập
+            Login
           </Button>
         </Modal.Footer>
       </div>

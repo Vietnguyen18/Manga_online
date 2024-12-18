@@ -1,0 +1,46 @@
+.books_detail {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 20px 0;
+  color: #333;
+  box-sizing: border-box;
+  .breadcrumb {
+    padding: 10px;
+    margin: 0;
+    span,
+    a,
+    .ant-breadcrumb-separator {
+      color: #333;
+      font-size: 16px;
+      text-decoration: none;
+      transition: color 0.3s ease;
+      &:hover {
+        color: #ccc;
+      }
+    }
+  }
+  .content_book {
+    margin: 10px;
+  }
+}
+
+// dark
+.dark {
+  background-color: #242526;
+  color: #fff;
+
+  .breadcrumb {
+    span,
+    a,
+    .ant-breadcrumb-separator {
+      color: #fff;
+    }
+
+    span:hover,
+    a:hover,
+    .ant-breadcrumb-separator:hover {
+      color: #ccc;
+    }
+  }
+}

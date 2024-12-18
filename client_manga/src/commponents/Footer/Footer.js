@@ -30,9 +30,7 @@ const Footer = ({ isLight }) => {
             style={{ color: isLight ? "#333" : "#fff" }}
           >
             <div class="footer-links">
-              <h4>
-                Bạn có thể chọn vào các đường link để đi tới trang bạn muốn.
-              </h4>
+              <h4>You can select the link to go to the page you want.</h4>
               <ul className="list_link">
                 <li>
                   <a href="#">Home</a>

@@ -1,144 +1,51 @@
-$hue: 223;
-
-.pl {
-  box-shadow: 2em 0 2em hsla(0, 0%, 0%, 0.2) inset,
-    -2em 0 2em hsla(0, 0%, 100%, 0.1) inset;
+.container_loading {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transform: rotateX(30deg) rotateZ(45deg);
-  width: 15em;
-  height: 15em;
-
-  &__dot {
+  margin: 50px 0;
+  .spinner {
+    width: 56px;
+    height: 56px;
+    display: grid;
     border-radius: 50%;
-    $dur: 2s;
-    animation-name: shadow;
-    box-shadow: 0.1em 0.1em 0 0.1em hsl(0, 0%, 0%),
-      0.3em 0 0.3em hsla(0, 0%, 0%, 0.5);
-    top: calc(50% - 0.75em);
-    left: calc(50% - 0.75em);
-    width: 1.5em;
-    height: 1.5em;
-    position: absolute;
-    animation-duration: $dur;
-    animation-iteration-count: infinite;
 
-    &::before,
-    &::after {
-      content: "";
-      display: block;
-      left: 0;
-      width: inherit;
-      position: absolute;
-      animation-duration: $dur;
-      animation-iteration-count: infinite;
+    -webkit-mask: radial-gradient(farthest-side, #0000 40%, #6121d1 41%);
+    mask: radial-gradient(farthest-side, #0000 40%, #6121d1 41%);
+
+    background: linear-gradient(
+          0deg,
+          rgba(97, 33, 209, 0.5) 50%,
+          rgba(97, 33, 209, 1) 0
+        )
+        center/4.5px 100%,
+      linear-gradient(
+          90deg,
+          rgba(97, 33, 209, 0.25) 50%,
+          rgba(97, 33, 209, 0.75) 0
+        )
+        center/100% 4.5px;
+    background-repeat: no-repeat;
+    animation: spinner-animation 1s infinite steps(12);
+  }
+
+  .spinner::before,
+  .spinner::after {
+    content: "";
+    grid-area: 1/1;
+    border-radius: 50%;
+    background: inherit;
+    opacity: 0.915;
+    transform: rotate(30deg);
+  }
+
+  .spinner::after {
+    opacity: 0.83;
+    transform: rotate(60deg);
+  }
+
+  @keyframes spinner-animation {
+    100% {
+      transform: rotate(1turn);
     }
-
-    &::before {
-      animation-name: pushInOut1;
-      background-color: var(--bg);
-      border-radius: inherit;
-      box-shadow: 0.05em 0 0.1em hsla(0, 0%, 100%, 0.2) inset;
-      height: inherit;
-      z-index: 1;
-    }
-
-    &::after {
-      animation-name: pushInOut2;
-      background-color: var(--primary1);
-      border-radius: 0.75em;
-      box-shadow: 0.1em 0.3em 0.2em hsla(0, 0%, 100%, 0.4) inset,
-        0 (-0.4em) 0.2em #{hsl($hue, 10%, 20%)} inset,
-        0 (-1em) 0.25em hsla(0, 0%, 0%, 0.3) inset;
-      bottom: 0;
-      clip-path: polygon(0 75%, 100% 75%, 100% 100%, 0 100%);
-      height: 3em;
-      transform: rotate(-45deg);
-      transform-origin: 50% 2.25em;
-    }
-
-    $dots: 12;
-    $zIndices: (5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 6);
-
-    @for $i from 1 through $dots {
-      &:nth-child(#{$i}) {
-        $angle: 360deg / $dots * ($i - 1);
-        transform: rotate(-$angle) translateX(5em) rotate($angle);
-        z-index: nth($zIndices, $i);
-
-        &,
-        &::before,
-        &::after {
-          animation-delay: $dur * (-($i - 1) / $dots);
-        }
-      }
-    }
-  }
-
-  &__text {
-    font-size: 0.75em;
-    max-width: 5rem;
-    position: relative;
-    text-shadow: 0 0 0.1em var(--fg-t);
-    transform: rotateZ(-45deg);
-  }
-}
-
-/* Animations */
-@keyframes shadow {
-  0% {
-    animation-timing-function: ease-in;
-    box-shadow: 0.1em 0.1em 0 0.1em hsl(0, 0%, 0%),
-      0.3em 0 0.3em hsla(0, 0%, 0%, 0.3);
-  }
-  25% {
-    animation-timing-function: ease-out;
-    box-shadow: 0.1em 0.1em 0 0.1em hsl(0, 0%, 0%),
-      0.8em 0 0.8em hsla(0, 0%, 0%, 0.5);
-  }
-  50%,
-  100% {
-    box-shadow: 0.1em 0.1em 0 0.1em hsl(0, 0%, 0%),
-      0.3em 0 0.3em hsla(0, 0%, 0%, 0.3);
-  }
-}
-
-@keyframes pushInOut1 {
-  0% {
-    animation-timing-function: ease-in;
-    background-color: var(--bg);
-    transform: translate(0, 0);
-  }
-  25% {
-    animation-timing-function: ease-out;
-    background-color: var(--primary2);
-    transform: translate(-71%, -71%);
-  }
-  50%,
-  100% {
-    background-color: var(--bg);
-    transform: translate(0, 0);
-  }
-}
-
-@keyframes pushInOut2 {
-  0% {
-    animation-timing-function: ease-in;
-    background-color: var(--bg);
-    clip-path: polygon(0 75%, 100% 75%, 100% 100%, 0 100%);
-  }
-  25% {
-    animation-timing-function: ease-out;
-    background-color: var(--primary1);
-    clip-path: polygon(0 25%, 100% 25%, 100% 100%, 0 100%);
-  }
-  50%,
-  100% {
-    background-color: var(--bg);
-    clip-path: polygon(0 75%, 100% 75%, 100% 100%, 0 100%);
   }
 }

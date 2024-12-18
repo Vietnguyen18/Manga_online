@@ -11,6 +11,7 @@ const NavBar = () => {
   const [istype, setIsType] = useState(null);
   const id_user = localStorage.getItem("id_user");
   const navigate = useNavigate();
+
   const handelShow = (type) => {
     setIsType(type);
     clearTimeout(hoverTime.current);
@@ -33,14 +34,14 @@ const NavBar = () => {
       <Container>
         <ul className="menu">
           <a href="/">
-            <li>Trang Chủ</li>
+            <li>Home</li>
           </a>
           <li
             className="menu_hidden"
             onMouseEnter={() => handelShow("category")}
             onMouseLeave={handleClose}
           >
-            <span>Thể Loại</span>
+            <span>Categories</span>
             <i className="icon_arrow">
               <IoIosArrowDropdownCircle />
             </i>
@@ -50,19 +51,19 @@ const NavBar = () => {
             onMouseEnter={() => handelShow("rank")}
             onMouseLeave={handleClose}
           >
-            <span>Xếp Hạng</span>
+            <span>Ranking</span>
             <i className="icon_arrow">
               <IoIosArrowDropdownCircle />
             </i>
           </li>
-          <a href="/tim-truyen">
-            <li>Tìm Truyện</li>
+          <a href="/tim-kiem-nang-cao">
+            <li>Search Comics</li>
           </a>
           <a to="/lich-su" onClick={() => handleNavigate()}>
-            <li>Lịch Sử</li>
+            <li>History</li>
           </a>
-          <a href="/theo-doi">
-            <li>Theo Dõi</li>
+          <a href="/mo-ta">
+            <li>Description</li>
           </a>
         </ul>
       </Container>

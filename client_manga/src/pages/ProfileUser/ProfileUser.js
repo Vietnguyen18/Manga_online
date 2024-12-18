@@ -59,8 +59,6 @@ const ProfileUser = () => {
   };
 
   const handleDeleteAccount = (id) => {
-    console.log(id);
-
     Swal.fire({
       title: "Are you sure?",
       text: "You will not be able to recover your account!",

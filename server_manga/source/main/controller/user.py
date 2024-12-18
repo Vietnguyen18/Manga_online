@@ -108,8 +108,8 @@ app.add_url_rule(
 
 # user activity history
 app.add_url_rule(
-    "/user/activity_history/<int:id_user>",
-    methods=["GET", "POST"],
+    "/user/activity_history/<string:type>/<int:index>/<int:id_user>",
+    methods=["GET", "POST", "DELETE"],
     view_func=(log_user),
 )
 # count user regitser

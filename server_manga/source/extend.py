@@ -44,7 +44,8 @@ from werkzeug.utils import secure_filename
 
 from itsdangerous import URLSafeTimedSerializer
 
-from sqlalchemy import JSON, cast, FLOAT, func, desc
+from sqlalchemy import JSON, cast, FLOAT, func, desc, asc
+from sqlalchemy.types import Integer
 from datetime import datetime, timedelta
 
 from urllib.parse import unquote
@@ -85,32 +86,44 @@ def send_email(msg):
 
 
 def list_chapter(localhost, id_manga, path_segment_manga, type):
-    querys = (
-        List_Chapter.query.filter_by(id_manga=id_manga)
-        .order_by(desc(func.cast(List_Chapter.path_segment_chapter, FLOAT)))
-        .all()
-    )
+    try:
+        querys = List_Chapter.query.filter(
+            List_Chapter.id_manga.ilike(f"%{id_manga}%")
+        ).all()
 
-    if querys is None:
-        return jsonify(msg="None"), 404
-    # print("______VAO_PHAN_DEBUG_CHAPTER______")
-    ListChapters = []
-    chapterNameNumber = 0
-    for query in querys:
-        itemChapter = {}
-        chapterNameNumber = chapterNameNumber + 1
-        path_segment_chapter = query.path_segment_chapter
-        chapter_name = query.title_chapter.split("/")[-1]
-        # print(chapter_name)
-        if chapter_name == "":
-            chapter_name = query.title_chapter.split("/")[-2]
-        chapter_name.replace(".html", "")
-        path = f"{localhost}/r{type}/{path_segment_manga}/{path_segment_chapter}"
-        # print(path)
-        itemChapter[f"{chapterNameNumber}"] = path
-        ListChapters.append(path)
+        if not querys:
+            return []
 
-    return ListChapters
+        ListChapters = []
+
+        for query in querys:
+            path_segment_chapter = query.path_segment_chapter
+            match = re.search(r"chapter-(\d+)", path_segment_chapter)
+            if match:
+                chapter_number = int(match.group(1))
+            else:
+                continue
+
+            chapter_name = query.title_chapter.split("/")[-1]
+            if chapter_name == "":
+                chapter_name = query.title_chapter.split("/")[-2]
+            chapter_name = chapter_name.replace(".html", "")
+
+            path = f"{localhost}/r{type}/{path_segment_manga}/{path_segment_chapter}"
+
+            chapter = {
+                "url": path,
+                "id_chapter": path_segment_chapter,
+                "chapter_number": chapter_number,
+            }
+            ListChapters.append(chapter)
+
+        ListChapters.sort(key=lambda x: x["chapter_number"])
+
+        return ListChapters
+    except Exception as e:
+        print(f"Error in list_chapter: {e}")
+        return []
 
 
 def list_chapter_novel(localhost, id_manga, path_segment_manga, type):
@@ -132,7 +145,7 @@ def list_chapter_novel(localhost, id_manga, path_segment_manga, type):
         chapterNameNumber = chapterNameNumber + 1
         print("id_chapter", query.id_manga)
         path_segment_chapter = split_link(query.id_chapter)
-        path = f"{localhost}/r{type}/{path_segment_manga}/{path_segment_chapter}"
+        path = f"{localhost}/{type}/{path_segment_manga}/{path_segment_chapter}"
         # print(path)
         itemChapter[f"{chapterNameNumber}"] = path
         ListChapterNovels.append(path)
@@ -157,7 +170,8 @@ def get_comments(path_segment_manga):
             "likes": like_count,
             "is_comment_reply": comment.is_comment_reply,
             "is_edited_comment": comment.is_edited_comment,
-            "replies": get_replies(comment.id_comment),
+            "replies_content": get_replies(comment.id_comment),
+            "reply": len(get_replies(comment.id_comment)),
         }
 
     def get_replies(parent_comment_id):
@@ -175,7 +189,9 @@ def get_comments(path_segment_manga):
         return reply_data
 
     comments = (
-        Comments.query.filter_by(path_segment_manga=path_segment_manga)
+        Comments.query.filter(
+            Comments.path_segment_manga.ilike(f"%{path_segment_manga}%")
+        )
         .order_by(func.STR_TO_DATE(Comments.time_comment, "%H:%i:%S %d-%m-%Y").desc())
         .all()
     )
@@ -185,7 +201,9 @@ def get_comments(path_segment_manga):
         if comment.is_comment_reply == False:
             comments_info.append(get_comment_data(comment))
 
-    return comments_info
+    if not comments_info:
+        return jsonify({"data": [], "message": "No data available"})
+    return jsonify({"status": 200, "data": comments_info}), 200
 
 
 def delete_reply_comment(comment):
@@ -473,3 +491,25 @@ def get_id_server(index):
 
 def get_username_from_email(email):
     return email.split("@")[0]
+
+
+def make_title(text, id):
+    if not text:
+        raise ValueError("Text is required.")
+    if not id.startswith("manga-"):
+        raise ValueError("ID must start with 'manga-'")
+
+    name = text.lower().replace(" ", "-")
+    id_manga = id.replace("manga-", "")
+    return f"{name}-{id_manga}"
+
+
+def format_date(date_str):
+    try:
+        date_obj = datetime.strptime(date_str, "%b %d, %Y %I:%M %p")
+
+        formatted_date = date_obj.strftime("%d/%m/%Y")
+
+        return formatted_date
+    except Exception as e:
+        return f"Error: {str(e)}"

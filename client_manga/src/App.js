@@ -22,6 +22,10 @@ import DashBoard from "./pages/Admin/sideBar/ListMenu/DashBoard/DashBoard";
 import User from "./pages/Admin/sideBar/ListMenu/User/User";
 import Books from "./pages/Admin/sideBar/ListMenu/Books/Books";
 import ProfileUser from "./pages/ProfileUser/ProfileUser";
+import DetailManga from "./commponents/MangaItem/DetailManga/DetailManga";
+import ReadManga from "./commponents/MangaItem/DetailManga/ReadManga/ReadManga";
+import Search from "./commponents/Search/Search";
+import Description from "./commponents/Description/Description";
 
 const Layout = () => {
   const [isLight, setIsLight] = useState(true);
@@ -32,7 +36,7 @@ const Layout = () => {
         <Header isLight={isLight} setIsLight={setIsLight} />
       </div>
       <div className="app-content">
-        <Outlet />
+        <Outlet context={{ isLight }} />
       </div>
       <div className="app-footer">
         <Footer isLight={isLight} />
@@ -42,7 +46,6 @@ const Layout = () => {
 };
 
 function App() {
-  const datauser = useSelector((state) => state.account.dataUser);
   const item = [
     {
       path: "/",
@@ -70,8 +73,20 @@ function App() {
           element: <HistoryRead />,
         },
         {
+          path: "/tim-kiem-nang-cao",
+          element: <Search />,
+        },
+        {
           path: "/truyen-moi-cap-nhat/:page",
           element: <Recommended />,
+        },
+        {
+          path: "/truyen-tranh/:namePath",
+          element: <DetailManga />,
+        },
+        {
+          path: "/truyen-tranh/:namePath/:chapterId",
+          element: <ReadManga />,
         },
       ],
     },
@@ -108,6 +123,10 @@ function App() {
     {
       path: "/profile/:nameUser",
       element: <ProfileUser />,
+    },
+    {
+      path: "/mo-ta",
+      element: <Description />,
     },
   ];
   const router = createBrowserRouter(item);

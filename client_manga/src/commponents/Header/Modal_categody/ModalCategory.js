@@ -4,6 +4,7 @@ import { Container } from "react-bootstrap";
 import { ListAllCategory } from "../../../services/api";
 import { list_rank } from "../../../constants/extend";
 import { useNavigate } from "react-router-dom";
+import { makeTitle } from "../../../utils/extend";
 
 const ModalCategory = (props) => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const ModalCategory = (props) => {
     } else if (type === "rank") {
       setDataList(list_rank);
     }
-  }, []);
+  }, [type]);
   console.log(dataList);
 
   const handleCategorySelect = (category) => {
@@ -47,8 +48,8 @@ const ModalCategory = (props) => {
                   key={index}
                   onClick={() =>
                     type === "category"
-                      ? handleCategorySelect(e.category_name)
-                      : handleRankSelect(e.category_name)
+                      ? handleCategorySelect(makeTitle(e.category_name))
+                      : handleRankSelect(makeTitle(e.category_name))
                   }
                 >
                   {e.category_name}

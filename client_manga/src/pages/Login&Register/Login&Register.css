@@ -87,7 +87,10 @@ form .input-box {
   right: 20px;
   top: 50%;
   translate: 0 -50%;
-  font-size: 16px;
+  font-size: 24px;
+  padding: 5px;
+  cursor: pointer;
+  user-select: none;
 }
 
 form .remember-forgot {

@@ -1,6 +1,5 @@
 import instance from "../utils/axios";
 const token = localStorage.getItem("access_token");
-console.log("token", token);
 
 // api token
 export const callRefeshToken = () => {
@@ -106,10 +105,30 @@ export const ListRankYear = async (page) => {
   return response.data;
 };
 
-// history read
+// history get read
 export const ListHistoryRead = async (idUser) => {
-  const response = await instance.get(`/user/activity_history/${idUser}`);
-  return response;
+  const response = await instance.get(
+    `/user/activity_history/manga/1/${idUser}`
+  );
+  return response.data;
+};
+// history post read
+export const SaveHistoryRead = async (idUser, formData) => {
+  const response = await instance.post(
+    `/user/activity_history/manga/1/${idUser}`,
+    formData
+  );
+  return response.data;
+};
+// history delete read
+export const DeleteHistoryRead = async (idUser, formData) => {
+  const response = await instance.delete(
+    `/user/activity_history/manga/1/${idUser}`,
+    {
+      data: formData,
+    }
+  );
+  return response.data;
 };
 // api user new register
 export const ListUsersNew = async () => {
@@ -198,5 +217,142 @@ export const CreateManga = async (formData) => {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
+};
+
+// detail manga
+export const FetchDetailManga = async (id_manga) => {
+  const response = await instance.get(`/manga/${id_manga}`);
+  return response.data;
+};
+
+// get all comment manga
+export const GetAllComments = async (id_manga) => {
+  const response = await instance.get(`/manga/all_comments/${id_manga}`);
+  return response.data;
+};
+
+// get all chapter
+export const GetAllChapters = async (id_manga) => {
+  const response = await instance.get(`/manga/list_all_chapter/${id_manga}`);
+  return response.data;
+};
+
+// get all chapter
+export const GetChaptersByID = async (id_manga) => {
+  const response = await instance.get(`/manga/list_chapter/${id_manga}`);
+  return response.data;
+};
+
+// get content chapter
+export const GetContentChapter = async (id_manga, id_chapter) => {
+  const response = await instance.get(`/manga/manga-${id_manga}/${id_chapter}`);
+  return response.data;
+};
+
+// search manga
+export const SearchManga = async (content) => {
+  const response = await instance.get(
+    `/manga/1/search_manga?search=${content}`
+  );
+  return response.data;
+};
+
+// get comment chapter
+export const GetCommentsChapter = async (id_manga, id_chapter) => {
+  const response = await instance.get(
+    `/manga/comment_chapter/${id_manga}/${id_chapter}`
+  );
+  return response.data;
+};
+
+// api like comment
+export const ListComment = async (id_user, id_comment) => {
+  const response = await instance.post(
+    `/manga/like_comment/${id_user}/${id_comment}`
+  );
+  return response.data;
+};
+
+// api comment
+export const CreateComment = async (id_manga, content) => {
+  const response = await instance.post(
+    `/manga/create_comment/${id_manga}`,
+    {
+      content: content,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+// api edit comment
+export const EditComment = async (id_comment, content) => {
+  const response = await instance.patch(
+    `/manga/edit_comment/${id_comment}`,
+    {
+      content: content,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+// api delete comment
+export const DeleteComment = async (id_comment) => {
+  const response = await instance.delete(
+    `/manga/delete_comment/${id_comment}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+// api create comment chapter
+export const CreateCommentChapter = async (id_manga, id_chapter, content) => {
+  const response = await instance.post(
+    `/manga/create_comment_chapter/${id_manga}/${id_chapter}`,
+    {
+      content: content,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+// api replies comment
+export const FetchRepliesComment = async (id_comment, content) => {
+  const response = await instance.post(
+    `/manga/create_rely_comment/${id_comment}`,
+    {
+      content: content,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+// api forgot password
+export const FetchForgotPassword = async (formdata) => {
+  const response = await instance.patch(`/forgot_password`, formdata);
   return response.data;
 };

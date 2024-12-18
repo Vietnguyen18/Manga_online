@@ -7,7 +7,7 @@ import { Dropdown, Space, Avatar, List, notification, message } from "antd";
 import { memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { doLogoutAction } from "../../redux/account/accountSlice";
-import { callLogout, fetchUserByID } from "../../services/api";
+import { callLogout, fetchUserByID, SearchManga } from "../../services/api";
 import axios from "axios";
 import { doSearch } from "../../redux/search/searchSlice";
 import { HiOutlineLightBulb } from "react-icons/hi";
@@ -16,7 +16,12 @@ import { IoIosNotifications } from "react-icons/io";
 import React from "react";
 import ModalAccount from "../Auth/ModalAccount/ModalAccount";
 import NavBar from "./NavBar";
-import { removeVietnameseTones } from "../../utils/extend";
+import {
+  formatRating,
+  makeLink,
+  removeVietnameseTones,
+} from "../../utils/extend";
+import { useDebounce } from "../../utils/useDebounce";
 
 const Header = ({ isLight, setIsLight }) => {
   const navigate = useNavigate();
@@ -26,14 +31,17 @@ const Header = ({ isLight, setIsLight }) => {
   const [isShowModalLogin, setIsShowModalLogin] = useState(false);
   const [apiUser, setApiUser] = useState([]);
   const [nameUser, setNameUser] = useState("");
-
+  const [listManga, setListManga] = useState([]);
+  const [content, setContent] = useState("");
+  const debount = useDebounce(content, 500);
+  const [isSearchPerformed, setIsSearchPerformed] = useState(false);
   // thay doi gia dien
   useEffect(() => {
     const savedTheme = localStorage.getItem("isLight") === "true";
     setIsLight(savedTheme);
 
     // cap nhat
-    document.body.style.backgroundColor = savedTheme ? "#fff" : "#18191a";
+    document.body.style.backgroundColor = savedTheme ? "#ebebeb" : "#18191a";
     const nav = document.getElementsByClassName("nav_bar");
     for (let i = 0; i < nav.length; i++) {
       nav[i].style.backgroundColor = savedTheme ? "#f18121" : "#242526";
@@ -55,19 +63,21 @@ const Header = ({ isLight, setIsLight }) => {
         message.error("Failed to fetch user data");
       }
     };
-    FetchUserData();
+    if (datauser?.id_user) {
+      FetchUserData();
+    }
   }, [datauser?.id_user]);
 
   let items = [
     {
-      label: <Link to={`/profile/${nameUser}`}>Trang profile</Link>,
+      label: <Link to={`/profile/${nameUser}`}>Page profile</Link>,
       key: "userprofile",
     },
 
     {
       label: (
         <label style={{ cursor: "pointer" }} onClick={() => handleLogOut()}>
-          Đăng xuất
+          Logout
         </label>
       ),
       key: "logout",
@@ -75,7 +85,7 @@ const Header = ({ isLight, setIsLight }) => {
   ];
   if (datauser?.role === true) {
     items.unshift({
-      label: <Link to="/admin">Trang quản trị</Link>,
+      label: <Link to="/admin">Page Admin</Link>,
       key: "admin",
     });
   }
@@ -92,10 +102,10 @@ const Header = ({ isLight, setIsLight }) => {
       localStorage.removeItem("access_token");
       dispatch(doLogoutAction());
       navigate("/");
-      message.success("Đăng xuất thành công!");
+      message.success("Signed out successfully!");
     } else {
       notification.error({
-        message: "Có lỗi xáy ra",
+        message: "An error occurred",
         description:
           res.message && Array.isArray(res.message)
             ? res.message[0]
@@ -108,12 +118,26 @@ const Header = ({ isLight, setIsLight }) => {
     const newLight = !isLight;
     setIsLight(newLight);
     localStorage.setItem("isLight", newLight);
-    document.body.style.backgroundColor = newLight ? "#fff" : "#18191a";
+    document.body.style.backgroundColor = newLight ? "#ebebeb" : "#18191a";
     const nav = document.getElementsByClassName("nav_bar");
     for (let i = 0; i < nav.length; i++) {
       nav[i].style.backgroundColor = newLight ? "#f18121" : "#242526";
     }
   };
+
+  useEffect(() => {
+    fetchSearchManga(debount);
+  }, [debount]);
+
+  const fetchSearchManga = async (content) => {
+    const response = await SearchManga(content);
+    setListManga(response.data);
+  };
+  const handleSearchChange = (e) => {
+    setContent(e.target.value);
+    setIsSearchPerformed(true);
+  };
+
   return (
     <>
       <Container>
@@ -133,13 +157,50 @@ const Header = ({ isLight, setIsLight }) => {
               <HiOutlineLightBulb />
             </i>
             <div className="search">
-              <input type="text" placeholder="Tim kiem chuyen.........." />
+              <input
+                type="text"
+                placeholder="Search for something here.........."
+                value={content}
+                onChange={handleSearchChange}
+              />
               <button className="btn_search">
                 <span className="icon_btn_search">
                   <BsSearchHeart />
                 </span>
               </button>
+              <div
+                className={`search_result ${
+                  isSearchPerformed && listManga.length > 0 ? "visible" : ""
+                }`}
+              >
+                <ul>
+                  {isSearchPerformed ? (
+                    listManga.length > 0 ? (
+                      listManga.map((manga, index) => (
+                        <li key={manga.id_manga}>
+                          <a
+                            href={makeLink("truyen-tranh", manga.name_path)}
+                            title={manga.title}
+                          >
+                            <div className="search_avatar">
+                              <img src={manga.poster} alt={manga.title} />
+                            </div>
+                            <div className="search_info">
+                              <p className="name_manga">{manga.title}</p>
+                              <p className="author">{manga.author}</p>
+                              <p className="rate">{formatRating(manga.rate)}</p>
+                            </div>
+                          </a>
+                        </li>
+                      ))
+                    ) : (
+                      <p>không có dữ liệu</p>
+                    )
+                  ) : null}
+                </ul>
+              </div>
             </div>
+
             <div className="header-notification">
               <i
                 style={{
@@ -155,7 +216,7 @@ const Header = ({ isLight, setIsLight }) => {
                   className="btn"
                   onClick={() => setIsShowModalLogin(true)}
                 >
-                  Đăng nhập
+                  Login
                 </button>
               ) : (
                 <Dropdown menu={{ items }} trigger={["click"]}>

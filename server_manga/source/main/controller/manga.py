@@ -39,30 +39,37 @@ app.add_url_rule(
 
 # get list manga by path
 app.add_url_rule(
-    "/rmanga/<string:path>",
+    "/manga/<string:path>",
     methods=["GET"],
     view_func=get_listManga,
 )
 
 # get list novel by path
 app.add_url_rule(
-    "/rnovel/<string:path>",
+    "/novel/<string:path>",
     methods=["GET"],
     view_func=get_Listnovel,
 )
 
 # get image chapter manga
 app.add_url_rule(
-    "/rmanga/<string:path_segment_manga>/<string:path_segment_chapter>",
+    "/manga/<string:path_segment_manga>/<string:path_segment_chapter>",
     methods=["GET"],
     view_func=get_image_chapter,
 )
 
 # get content chapter novel
 app.add_url_rule(
-    "/rnovel/<string:path_segment_manga>/<string:path_segment_chapter>",
+    "/novel/<string:path_segment_manga>/<string:path_segment_chapter>",
     methods=["GET"],
     view_func=get_content_chapter,
+)
+
+# get all comment manga
+app.add_url_rule(
+    "/manga/all_comments/<string:path>",
+    methods=["GET"],
+    view_func=get_all_comment_manga,
 )
 
 # get comment chapter manga
@@ -139,7 +146,7 @@ app.add_url_rule(
 
 # search manga
 app.add_url_rule(
-    "/manga/search_manga",
+    "/manga/<int:index>/search_manga",
     methods=["GET"],
     view_func=(search_manga),
 )
@@ -156,5 +163,14 @@ app.add_url_rule("/manga/total_views", methods=["GET"], view_func=views_manga)
 
 # list chapter
 app.add_url_rule(
-    "/manga/list_chapter/<string:id_manga>", methods=["GET"], view_func=list_all_chapter
+    "/manga/list_all_chapter/<string:id_manga>",
+    methods=["GET"],
+    view_func=list_all_chapter,
+)
+
+# list chapter
+app.add_url_rule(
+    "/manga/list_chapter/<string:id_manga>",
+    methods=["GET"],
+    view_func=list_chapter_by_id,
 )

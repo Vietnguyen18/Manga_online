@@ -5,6 +5,7 @@ import { ListRecommendedComics } from "../../../services/api";
 import { Pagination } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { IoMdCloudDownload } from "react-icons/io";
+import { makeLink } from "../../../utils/extend";
 
 const Recommended = () => {
   const [listDataRecommend, setListDataRecommend] = useState([]);
@@ -28,6 +29,9 @@ const Recommended = () => {
     navigate(`/truyen-moi-cap-nhat/trang-${page}`);
   };
 
+  const handleNavigate = (name_path) => {
+    navigate(`/truyen-tranh/${name_path}`);
+  };
   return (
     <Container>
       {/* Recommended Comics */}
@@ -38,7 +42,7 @@ const Recommended = () => {
               <i className="icon_recommended">
                 <IoMdCloudDownload />
               </i>
-              Truyện tranh mới phát hành
+              Newly released comic
             </span>
           </h2>
           <div className="manga_suggest">
@@ -70,9 +74,15 @@ const Recommended = () => {
 
                   return (
                     <>
-                      <li className="grid-item">
+                      <li
+                        className="grid-item"
+                        onClick={() => handleNavigate(e.name_path)}
+                      >
                         <div className="book_avatar">
-                          <a href={e.url_manga} title={e.title_manga}>
+                          <a
+                            href={makeLink("truyen-tranh", e.name_path)}
+                            title={e.title_manga}
+                          >
                             <img
                               src={e.image_poster_link_goc}
                               alt={e.title_manga}

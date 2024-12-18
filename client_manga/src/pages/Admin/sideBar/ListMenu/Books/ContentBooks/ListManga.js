@@ -8,13 +8,14 @@ import ModalCreateManga from "./ModalCreateManga";
 import {
   DeleteManga,
   FilterManga,
-  ListAllChapter,
+  GetChaptersByID,
 } from "../../../../../../services/api";
 import {
   formatViews,
-  getMangaId,
+  getMangaIdgetShortenedUrl,
   shortId,
 } from "../../../../../../utils/extend";
+import Swal from "sweetalert2";
 
 const ListManga = ({ search }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,7 +57,7 @@ const ListManga = ({ search }) => {
   const handelShowModal = (id_manga) => {
     setIsShowModelEdit(true);
     const mangaToEdit = listManga.find(
-      (manga) => getMangaId(manga.id_manga) === id_manga
+      (manga) => getMangaIdgetShortenedUrl(manga.id_manga) === id_manga
     );
 
     setIdManga(id_manga);
@@ -83,36 +84,65 @@ const ListManga = ({ search }) => {
   };
 
   const handleDeleteManga = async (id_manga) => {
-    try {
-      const response = await ListAllChapter(id_manga);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will not be able to restore this comic!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (rs) => {
+      if (rs.isConfirmed) {
+        try {
+          const response = await GetChaptersByID(id_manga);
 
-      if (response && response.data) {
-        const listChapter = response.data;
-        const deletePromises = listChapter.map((item) =>
-          DeleteManga(id_manga, item.path_segment_chapter)
-        );
-        const results = await Promise.all(deletePromises);
-        results.forEach((res, index) => {
-          if (res.status === 200) {
-            message.success(
-              `Chapter ${listChapter[index].path_segment_chapter} deleted successfully.`,
-              3
-            );
+          if (response && response.data) {
+            const listChapter = response.data;
+
+            if (listChapter.length > 0) {
+              const deletePromises = listChapter.map((item) =>
+                DeleteManga(id_manga, item.path_segment_chapter)
+              );
+              const results = await Promise.all(deletePromises);
+              results.forEach((res, index) => {
+                if (res.status === 200) {
+                  message.success(
+                    `Chapter ${listChapter[index].path_segment_chapter} deleted successfully.`,
+                    3
+                  );
+                } else {
+                  message.error(
+                    `Failed to delete chapter ${listChapter[index].path_segment_chapter}.`,
+                    3
+                  );
+                }
+              });
+            }
+
+            const mangaDeletionResult = await DeleteManga(id_manga, null);
+            if (mangaDeletionResult.status === 200) {
+              message.success("Manga deleted successfully.", 3);
+            } else {
+              message.error("Failed to delete manga.", 3);
+            }
+
+            await fetchListManga(currentPage);
           } else {
-            message.error(
-              `Failed to delete chapter ${listChapter[index].path_segment_chapter}.`,
-              3
-            );
+            const mangaDeletionResult = await DeleteManga(id_manga, null);
+            if (mangaDeletionResult.status === 200) {
+              message.success("Manga deleted successfully.", 3);
+            } else {
+              message.error("Failed to delete manga.", 3);
+            }
+
+            await fetchListManga(currentPage);
           }
-        });
-        await fetchListManga(currentPage);
-        message.success("All chapters deleted successfully.", 3);
-      } else {
-        message.error("No chapters found for the manga.", 3);
+        } catch (error) {
+          message.error("Error occurred while deleting manga.", 3);
+        }
       }
-    } catch (error) {
-      message.error("Error occurred while deleting manga.", 3);
-    }
+    });
   };
 
   return (
@@ -143,8 +173,8 @@ const ListManga = ({ search }) => {
             </thead>
             <tbody>
               {listManga.map((e, index) => (
-                <tr key={getMangaId(e.id_manga)}>
-                  <td>{getMangaId(shortId(e.id_manga))}</td>
+                <tr key={getMangaIdgetShortenedUrl(e.id_manga)}>
+                  <td>{getMangaIdgetShortenedUrl(shortId(e.id_manga))}</td>
                   <td>
                     <img
                       src={e.poster}
@@ -166,23 +196,29 @@ const ListManga = ({ search }) => {
                     <i
                       className="icon_active"
                       onClick={() =>
-                        handleShowModalActive(getMangaId(e.id_manga))
+                        handleShowModalActive(
+                          getMangaIdgetShortenedUrl(e.id_manga)
+                        )
                       }
                     >
                       <HiDotsVertical />
                     </i>
-                    {selectedID === getMangaId(e.id_manga) && (
+                    {selectedID === getMangaIdgetShortenedUrl(e.id_manga) && (
                       <div className="content_active">
                         <p
                           onClick={() =>
-                            handelShowModal(getMangaId(e.id_manga))
+                            handelShowModal(
+                              getMangaIdgetShortenedUrl(e.id_manga)
+                            )
                           }
                         >
                           Edit
                         </p>
                         <p
                           onClick={() =>
-                            handleDeleteManga(getMangaId(e.id_manga))
+                            handleDeleteManga(
+                              getMangaIdgetShortenedUrl(e.id_manga)
+                            )
                           }
                         >
                           Delete

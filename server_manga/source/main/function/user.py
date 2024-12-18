@@ -310,6 +310,7 @@ def forgot_password():
                     {
                         "message": "Please check your email or spam",
                         "email": account.email,
+                        "status": 200,
                     }
                 )
             ), 200
@@ -744,55 +745,65 @@ def get_location_information():
 
 
 # user activity history
-def log_user(id_user):
-    if request.method == "POST":
-        data = request.form
-        print("_______DATA____" + str(data))
-        path_segment_manga = data["path_segment_manga"]
-        path_segment_chapter = data["path_segment_chapter"]
-        type = data["type"]
-        index = data["index"]
-        if id_user == 0:
-            return jsonify({"message": "login to save history"})
-        user = Users.query.filter(Users.id_user == id_user).first()
-        if user:
-            profile = Profiles.query.filter_by(id_user=id_user).first()
-            if profile:
-                profile.number_reads += 1
-            log_user = LogUser.query.filter_by(
-                path_segment_manga=path_segment_manga,
-                path_segment_chapter=path_segment_chapter,
-            ).first()
-            manga = List_Manga.query.filter(
-                List_Manga.path_segment_manga == path_segment_manga
-            ).first()
-            chapter = List_Chapter.query.filter(
-                List_Chapter.path_segment_chapter == path_segment_chapter,
-                List_Chapter.id_manga == manga.id_manga,
-            ).first()
-            time = datetime.now().strftime("%Y-%m-%d")
-            if manga and chapter:
-                if log_user is None:
-                    data = LogUser(
-                        id_user=id_user,
-                        title_manga=manga.title_manga,
-                        path_segment_manga=path_segment_manga,
-                        title_chapter=chapter.title_chapter,
-                        path_segment_chapter=path_segment_chapter,
-                        poster=manga.poster_original,
-                        type=type,
-                        index=index,
-                        read_time=time,
-                    )
-                    db.session.add(data)
+def log_user(type, index, id_user):
+    try:
+        if request.method == "POST":
+            data = request.form
+            print("_______DATA____" + str(data))
+            path_segment_manga = data["id_manga"]
+            path_segment_chapter = data["id_chapter"]
+
+            if id_user == 0:
+                return jsonify({"message": "login to save history"})
+            user = Users.query.filter(Users.id_user == id_user).first()
+            if user:
+                profile = Profiles.query.filter_by(id_user=id_user).first()
+                if profile:
+                    profile.number_reads += 1
+                log_user = LogUser.query.filter(
+                    LogUser.path_segment_manga.ilike(f"%{path_segment_manga}%"),
+                    LogUser.path_segment_chapter == path_segment_chapter,
+                ).first()
+                manga = List_Manga.query.filter(
+                    List_Manga.path_segment_manga.ilike(f"%{path_segment_manga}%")
+                ).first()
+                if not manga:
+                    return jsonify({"message": "Manga not found"})
+                chapter = List_Chapter.query.filter(
+                    List_Chapter.path_segment_chapter == path_segment_chapter,
+                    List_Chapter.id_manga == manga.id_manga,
+                ).first()
+                time = datetime.now().strftime("%H:%M:%S %d-%m-%Y")
+                print("time", time)
+                if manga and chapter:
+                    if log_user is None:
+                        data = LogUser(
+                            id_user=id_user,
+                            title_manga=manga.title_manga,
+                            path_segment_manga=manga.path_segment_manga,
+                            title_chapter=chapter.title_chapter,
+                            path_segment_chapter=path_segment_chapter,
+                            poster=manga.poster_original,
+                            type=type,
+                            index=index,
+                            read_time=time,
+                        )
+                        db.session.add(data)
+                    else:
+                        log_user.read_time = time
+                        log_user.path_segment_chapter = path_segment_chapter
+                        print("time", time)
                 else:
-                    log_user.read_time = time
+                    return jsonify({"message": "chapter not found"})
+                db.session.commit()
+                return jsonify({"message": "History is saved", "status": 200})
             else:
-                return jsonify({"message": "chapter not found"})
-            db.session.commit()
-            return jsonify({"message": "History is saved"})
-        else:
-            return jsonify({"message": "user not found"})
+                return jsonify({"message": "user not found"})
+    except Exception as e:
+        db.session.rollback()
+        print("Error", e)
+        return jsonify({"status": 500, "message": f"Error Exception: {str(e)}"}), 500
+
     if request.method == "GET":
         try:
             result = []
@@ -803,6 +814,7 @@ def log_user(id_user):
                 .order_by(LogUser.id.desc())
                 .all()
             )
+            print("----log---", log_user)
             for item in log_user:
                 title_manga = item.title_manga
                 if title_manga in list_manga:
@@ -833,15 +845,67 @@ def log_user(id_user):
                     "type": item.type,
                     "index_server": item.index,
                     "name_server": name_server,
-                    "readAt": item.read_time.strftime("%d/%m/%Y"),
+                    "readAt": item.read_time,
                     "chapter": item.path_segment_chapter,
-                    # 'readAt': item.read_time.strftime("%a, %d %b %Y %H:%M:%S GMT"),
+                    "namePath": make_title(title_manga, item.path_segment_manga),
                 }
                 result.append(data)
-            return result
+            return (
+                jsonify(
+                    {
+                        "status": 200,
+                        "list_all_history": result,
+                        "list_manga": list_manga,
+                    }
+                ),
+                200,
+            )
         except Exception as e:
             print(e)
             return jsonify({"message": f"Erorr {e}"})
+
+    if request.method == "DELETE":
+        data = request.form
+        print("_______DATA____" + str(data))
+        path_segment_manga = data["id_manga"]
+        path_segment_chapter = data["id_chapter"]
+
+        if id_user == 0:
+            return jsonify({"message": "Please log in to save history"})
+
+        user = Users.query.filter(Users.id_user == id_user).first()
+        if user:
+            profile = Profiles.query.filter_by(id_user=id_user).first()
+            if profile:
+                profile.number_reads += 1
+            log_user = LogUser.query.filter(
+                LogUser.path_segment_manga.ilike(f"%{path_segment_manga}%"),
+                LogUser.path_segment_chapter == path_segment_chapter,
+            ).first()
+
+            if log_user:
+                db.session.delete(log_user)
+                db.session.commit()
+
+                manga = List_Manga.query.filter(
+                    List_Manga.path_segment_manga.ilike(f"%{path_segment_manga}%")
+                ).first()
+                if not manga:
+                    return jsonify({"message": "Manga not found", "status": 404})
+
+                chapter = List_Chapter.query.filter(
+                    List_Chapter.path_segment_chapter == path_segment_chapter,
+                    List_Chapter.id_manga == manga.id_manga,
+                ).first()
+
+                if not chapter:
+                    return jsonify({"message": "Chapter not found", "status": 404})
+
+                return jsonify({"message": "Delete history success", "status": 200})
+            else:
+                return jsonify({"message": "Log history not found", "status": 404})
+    else:
+        return jsonify({"message": "User not found", "status": 404})
 
 
 # total user new register
